@@ -1,5 +1,5 @@
-# [Basics: IoC](#basics:ioc)
- ## [Simplest Bean Container](#simplest-bean-container)
+# [Basics: IoC](#basics-ioc)
+ ## [Simple Bean Container](#simple-bean-container)
  > Code branch：simple-bean-container
 
 Define a simple BeanFactory that uses a Map to store beans, providing methods for bean registration and retrieval
@@ -225,7 +225,7 @@ public class ResourceAndResourceLoaderTest {
 }
 ```
 
-## [Defining Beans in XML Files](#defining-beans-in-xml-files)
+## [Defining Beans in XML](#defining-beans-in-xml)
 > Code branch: `xml-file-define-bean`
 
 With the `ResourceLoader`, we can declaratively define bean information in XML configuration files. The resource loader reads the XML file, parses the bean information, and registers the `BeanDefinition` into the container.
@@ -283,7 +283,7 @@ public class XmlFileDefineBeanTest {
 }
 ```
 
-## [BeanFactoryPostProcessor and BeanPostProcessor](#bean-factory-post-processor-and-bean-post-processor)
+## [BeanFactoryPostProcessor & BeanPostProcessor](#bean-factory-post-processor-and-bean-post-processor)
 > Code branch: `bean-factory-post-processor-and-bean-post-processor`
 
 `BeanFactoryPostProcessor` and `BeanPostProcessor` are two heavyweight interfaces in the Spring framework. Understanding the role of these interfaces provides a solid grasp of the core principles of Spring. To make it easier to understand, they are implemented in two sections.
@@ -526,7 +526,7 @@ public class AwareInterfaceTest {
 }
 ```
 
-## [Bean Scope, Adding Support for Prototype](#bean-scope-adding-support-for-prototype)
+## [Bean Scope - Adding Prototype Support](#bean-scope-adding-prototype-support)
 > Branch: `prototype-bean`
 
 For a `prototype` scoped bean, every time it's requested from the container, a new instance is created. We add a `scope` field in `BeanDefinition` to describe the bean's scope. When creating a prototype bean (`AbstractAutowireCapableBeanFactory#doCreateBean`), it is **not** added to the `singletonObjects` map. 
@@ -955,7 +955,7 @@ public class AutoProxyTest {
 }
 ```
 
-# [Extensions](#extensions)
+# [Extensions Features](#extensions)
 
 ## [PropertyPlaceholderConfigurer](#PropertyPlaceholderConfigurer)
 > Branch: `property-placeholder-configurer`
@@ -1428,7 +1428,7 @@ public class TypeConversionSecondPartTest {
 }
 ```
 
-# [Advanced Part](#advanced-part)
+# [Advanced Topics](#advanced-topics)
 
 ## [Solving Circular Dependency Problem (Part 1): Without Proxy Objects](#solving-circular-dependency-problem-1-without-proxy-objects)
 > Branch: `circular-reference-without-proxy-bean`
@@ -1499,7 +1499,7 @@ When `getBean()` is called, it checks `singletonObjects`, `earlySingletonObjects
 
 Tests are in `CircularReferenceWithProxyBeanTest`.
 
-## [Support for Lazy Initialization and Multiple Aspect Enhancements (By @zqczgl)](#support-for-lazy-init-and-multi-advice-by-zqczgl)
+## [Support for Lazy Initialization and Multiple Aspect  (By @zqczgl)](#support-for-lazy-init-and-multi-advice-by-zqczgl)
 
 ### [Lazy Initialization](#lazy-initialization)
 
