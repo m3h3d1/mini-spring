@@ -1,8 +1,8 @@
- # [基础篇：IoC](#基础篇IoC)
- ## [最简单的bean容器](#最简单的bean容器)
- > 代码分支：simple-bean-container
+# [Basics: IoC](#basics:ioc)
+ ## [Simplest Bean Container](#simplest-bean-container)
+ > Code branch：simple-bean-container
 
-定义一个简单的bean容器BeanFactory，内部包含一个map用以保存bean，只有注册bean和获取bean两个方法
+Define a simple BeanFactory that uses a Map to store beans, providing methods for bean registration and retrieval
 ```java
 public class BeanFactory {
 	private Map<String, Object> beanMap = new HashMap<>();
@@ -17,7 +17,7 @@ public class BeanFactory {
 }
 ```
 
-测试：
+**Test:**
 ```java
 public class SimpleBeanContainerTest {
 
@@ -39,19 +39,19 @@ public class SimpleBeanContainerTest {
 }
 ```
 
-## [BeanDefinition和BeanDefinitionRegistry](#BeanDefinition和BeanDefinitionRegistry)
-> 代码分支：bean-definition-and-bean-definition-registry
+## [BeanDefinition and BeanDefinitionRegistry](#beandefinition-and-beandefinitionregistry)
+> Code branch: bean-definition-and-bean-definition-registry
 
-主要增加如下类：
-- BeanDefinition，顾名思义，用于定义bean信息的类，包含bean的class类型、构造参数、属性值等信息，每个bean对应一个BeanDefinition的实例。简化BeanDefinition仅包含bean的class类型。
-- BeanDefinitionRegistry，BeanDefinition注册表接口，定义注册BeanDefinition的方法。
-- SingletonBeanRegistry及其实现类DefaultSingletonBeanRegistry，定义添加和获取单例bean的方法。
+New classes added:
+- `BeanDefinition`: Defines the bean metadata such as class type, constructor arguments, and property values. For simplicity, this version only contains the class type.
+- `BeanDefinitionRegistry`: Interface for registering `BeanDefinition` instances.
+- `SingletonBeanRegistry` and its implementation `DefaultSingletonBeanRegistry`: Defines methods for adding and retrieving singleton beans.
 
-bean容器作为BeanDefinitionRegistry和SingletonBeanRegistry的实现类，具备两者的能力。向bean容器中注册BeanDefinition后，使用bean时才会实例化。
+The bean container implements both `BeanDefinitionRegistry` and `SingletonBeanRegistry`, giving it the ability to register `BeanDefinition` and manage singleton beans. Beans are only instantiated when they are used.
 
 ![](./assets/bean-definition-and-bean-definition-registry.png)
 
-测试：
+**Test:**
 ```java
 public class BeanDefinitionAndBeanDefinitionRegistryTest {
 
@@ -74,23 +74,24 @@ class HelloService {
 }
 ```
 
-## [Bean实例化策略InstantiationStrategy](#Bean实例化策略InstantiationStrategy)
-> 代码分支：instantiation-strategy
+## [Bean Instantiation Strategy](#bean-instantiation-strategy)
+> Code branch: `instantiation-strategy`
 
-现在bean是在AbstractAutowireCapableBeanFactory.doCreateBean方法中用beanClass.newInstance()来实例化，仅适用于bean有无参构造函数的情况。
+Currently, beans are instantiated using `beanClass.newInstance()` in `AbstractAutowireCapableBeanFactory.doCreateBean`, which only works for no-argument constructors.
 
 ![](./assets/instantiation-strategy.png)
 
-针对bean的实例化，抽象出一个实例化策略的接口InstantiationStrategy，有两个实现类：
-- SimpleInstantiationStrategy，使用bean的构造函数来实例化
-- CglibSubclassingInstantiationStrategy，使用CGLIB动态生成子类
+To provide more flexible bean instantiation, an `InstantiationStrategy` interface is introduced, with two implementations:
+- `SimpleInstantiationStrategy`: Uses constructors to instantiate beans.
+- `CglibSubclassingInstantiationStrategy`: Uses CGLIB to generate subclass proxies.
 
-## [为bean填充属性](#为bean填充属性)
-> 代码分支：populate-bean-with-property-values
+## [Populating Bean Properties](#populating-bean-properties)
+> Code branch: `populate-bean-with-property-values`
 
-在BeanDefinition中增加和bean属性对应的PropertyValues，实例化bean之后，为bean填充属性(AbstractAutowireCapableBeanFactory#applyPropertyValues)。
+- `BeanDefinition` now includes `PropertyValues` to store bean properties.
+- After instantiating a bean, properties are set via `AbstractAutowireCapableBeanFactory#applyPropertyValues`.
 
-测试：
+**Test:**
 ```java
 public class PopulateBeanWithPropertyValuesTest {
 
@@ -111,11 +112,13 @@ public class PopulateBeanWithPropertyValuesTest {
 }
 ```
 
-## [为bean注入bean](#为bean注入bean)
-> 代码分支：populate-bean-with-bean
+## [Injecting a Bean into Another Bean](#injecting-a-bean-into-another-bean)
+> Branch: `populate-bean-with-bean`
 
-增加BeanReference类，包装一个bean对另一个bean的引用。实例化beanA后填充属性时，若PropertyValue#value为BeanReference，引用beanB，则先去实例化beanB。
-由于不想增加代码的复杂度提高理解难度，暂时不支持循环依赖，后面会在高级篇中解决该问题。
+Added `BeanReference` to represent a bean's dependency on another bean. When instantiating `beanA`, if a property value is a `BeanReference` pointing to `beanB`, `beanB` is instantiated first.
+
+To keep the implementation simple, circular dependencies are **not** supported for now. This will be handled in an advanced section later.
+
 ```java
 protected void applyPropertyValues(String beanName, Object bean, BeanDefinition beanDefinition) {
     try {
@@ -123,12 +126,12 @@ protected void applyPropertyValues(String beanName, Object bean, BeanDefinition 
             String name = propertyValue.getName();
             Object value = propertyValue.getValue();
             if (value instanceof BeanReference) {
-                // beanA依赖beanB，先实例化beanB
+                // If beanA depends on beanB, instantiate beanB first
                 BeanReference beanReference = (BeanReference) value;
                 value = getBean(beanReference.getBeanName());
             }
 
-            //通过反射设置属性
+            // Set property via reflection
             BeanUtil.setFieldValue(bean, name, value);
         }
     } catch (Exception ex) {
@@ -137,12 +140,12 @@ protected void applyPropertyValues(String beanName, Object bean, BeanDefinition 
 }
 ```
 
-测试：
+**Test:**
 ```java
 public class PopulateBeanWithPropertyValuesTest {
 
 	/**
-	 * 为bean注入bean
+	 * Injecting a Bean into Another Bean
 	 *
 	 * @throws Exception
 	 */
@@ -150,17 +153,17 @@ public class PopulateBeanWithPropertyValuesTest {
 	public void testPopulateBeanWithBean() throws Exception {
 		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
 
-		//注册Car实例
+		// Register Car instance
 		PropertyValues propertyValuesForCar = new PropertyValues();
 		propertyValuesForCar.addPropertyValue(new PropertyValue("brand", "porsche"));
 		BeanDefinition carBeanDefinition = new BeanDefinition(Car.class, propertyValuesForCar);
 		beanFactory.registerBeanDefinition("car", carBeanDefinition);
 
-		//注册Person实例
+		// Register Person instance
 		PropertyValues propertyValuesForPerson = new PropertyValues();
 		propertyValuesForPerson.addPropertyValue(new PropertyValue("name", "derek"));
 		propertyValuesForPerson.addPropertyValue(new PropertyValue("age", 18));
-		//Person实例依赖Car实例
+		// Person depends on Car instance
 		propertyValuesForPerson.addPropertyValue(new PropertyValue("car", new BeanReference("car")));
 		BeanDefinition beanDefinition = new BeanDefinition(Person.class, propertyValuesForPerson);
 		beanFactory.registerBeanDefinition("person", beanDefinition);
@@ -176,20 +179,20 @@ public class PopulateBeanWithPropertyValuesTest {
 }
 ```
 
-## [资源和资源加载器](#资源和资源加载器)
-> 代码分支：resource-and-resource-loader
+## [Resources and Resource Loaders](#resources-and-resource-loaders)
+> Code branch: `resource-and-resource-loader`
 
-Resource是资源的抽象和访问接口，简单写了三个实现类
+`Resource` is an abstraction for resources and provides an access interface. Three implementations are created:
 
 ![](./assets/resource.png)
 
-- FileSystemResource，文件系统资源的实现类
-- ClassPathResource，classpath下资源的实现类
-- UrlResource，对java.net.URL进行资源定位的实现类
+- `FileSystemResource`: Implementation for file system resources.
+- `ClassPathResource`: Implementation for classpath resources.
+- `UrlResource`: Implementation for resources located via `java.net.URL`.
 
-ResourceLoader接口则是资源查找定位策略的抽象，DefaultResourceLoader是其默认实现类
+`ResourceLoader` is an abstraction for resource lookup strategies, with `DefaultResourceLoader` as the default implementation.
 
-测试：
+**Test:**
 ```java
 public class ResourceAndResourceLoaderTest {
 
@@ -197,14 +200,14 @@ public class ResourceAndResourceLoaderTest {
 	public void testResourceLoader() throws Exception {
 		DefaultResourceLoader resourceLoader = new DefaultResourceLoader();
 
-		//加载classpath下的资源
+		// Load classpath resource
 		Resource resource = resourceLoader.getResource("classpath:hello.txt");
 		InputStream inputStream = resource.getInputStream();
 		String content = IoUtil.readUtf8(inputStream);
 		System.out.println(content);
 		assertThat(content).isEqualTo("hello world");
 
-		//加载文件系统资源
+		// Load file system resource
 		resource = resourceLoader.getResource("src/test/resources/hello.txt");
 		assertThat(resource instanceof FileSystemResource).isTrue();
 		inputStream = resource.getInputStream();
@@ -212,7 +215,7 @@ public class ResourceAndResourceLoaderTest {
 		System.out.println(content);
 		assertThat(content).isEqualTo("hello world");
 
-		//加载url资源
+		// Load URL resource
 		resource = resourceLoader.getResource("https://www.baidu.com");
 		assertThat(resource instanceof UrlResource).isTrue();
 		inputStream = resource.getInputStream();
@@ -222,21 +225,21 @@ public class ResourceAndResourceLoaderTest {
 }
 ```
 
-## [在xml文件中定义bean](#在xml文件中定义bean)
-> 代码分支：xml-file-define-bean
+## [Defining Beans in XML Files](#defining-beans-in-xml-files)
+> Code branch: `xml-file-define-bean`
 
-有了资源加载器，就可以在xml格式配置文件中声明式地定义bean的信息，资源加载器读取xml文件，解析出bean的信息，然后往容器中注册BeanDefinition。
+With the `ResourceLoader`, we can declaratively define bean information in XML configuration files. The resource loader reads the XML file, parses the bean information, and registers the `BeanDefinition` into the container.
 
-BeanDefinitionReader是读取bean定义信息的抽象接口，XmlBeanDefinitionReader是从xml文件中读取的实现类。BeanDefinitionReader需要有获取资源的能力，且读取bean定义信息后需要往容器中注册BeanDefinition，因此BeanDefinitionReader的抽象实现类AbstractBeanDefinitionReader拥有ResourceLoader和BeanDefinitionRegistry两个属性。
+`BeanDefinitionReader` is an abstraction for reading bean definition information, and `XmlBeanDefinitionReader` is the implementation for reading from XML files. The `BeanDefinitionReader` needs the ability to access resources, and after reading the bean definitions, it registers them into the container. Thus, the abstract implementation `AbstractBeanDefinitionReader` has both `ResourceLoader` and `BeanDefinitionRegistry` properties.
 
-由于从xml文件中读取的内容是String类型，所以属性仅支持String类型和引用其他Bean。后面会讲到类型转换器，实现类型转换。
+Since content read from the XML file is a `String`, only properties of type `String` or references to other beans are supported. Type converters for type conversion will be covered later.
 
-为了方便后面的讲解和功能实现，并且尽量保持和spring中BeanFactory的继承层次一致，对BeanFactory的继承层次稍微做了调整。
+To align with Spring's `BeanFactory` inheritance structure, slight adjustments were made to the inheritance hierarchy for `BeanFactory`.
 
 ![](./assets/xml-file-define-bean.png)
 
-测试：
-bean定义文件spring.xml
+**Test:**  
+Bean definition file `spring.xml`
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -280,34 +283,34 @@ public class XmlFileDefineBeanTest {
 }
 ```
 
-## [BeanFactoryPostProcessor和BeanPostProcessor](#BeanFactoryPostProcessor和BeanPostProcessor)
-> 代码分支：bean-factory-post-processor-and-bean-post-processor
+## [BeanFactoryPostProcessor and BeanPostProcessor](#bean-factory-post-processor-and-bean-post-processor)
+> Code branch: `bean-factory-post-processor-and-bean-post-processor`
 
-BeanFactoryPostProcessor和BeanPostProcessor是spring框架中具有重量级地位的两个接口，理解了这两个接口的作用，基本就理解spring的核心原理了。为了降低理解难度分两个小节实现。
+`BeanFactoryPostProcessor` and `BeanPostProcessor` are two heavyweight interfaces in the Spring framework. Understanding the role of these interfaces provides a solid grasp of the core principles of Spring. To make it easier to understand, they are implemented in two sections.
 
-BeanFactoryPostProcessor是spring提供的容器扩展机制，允许我们在bean实例化之前修改bean的定义信息即BeanDefinition的信息。其重要的实现类有PropertyPlaceholderConfigurer和CustomEditorConfigurer，PropertyPlaceholderConfigurer的作用是用properties文件的配置值替换xml文件中的占位符，CustomEditorConfigurer的作用是实现类型转换。BeanFactoryPostProcessor的实现比较简单，看单元测试BeanFactoryPostProcessorAndBeanPostProcessorTest#testBeanFactoryPostProcessor追下代码。
+`BeanFactoryPostProcessor` is a container extension mechanism in Spring that allows modification of bean definition information (i.e., `BeanDefinition`) before bean instantiation. Key implementations include `PropertyPlaceholderConfigurer` and `CustomEditorConfigurer`. The role of `PropertyPlaceholderConfigurer` is to replace placeholders in XML files with values from properties files, while `CustomEditorConfigurer` handles type conversion. The implementation of `BeanFactoryPostProcessor` is straightforward; refer to the unit test `BeanFactoryPostProcessorAndBeanPostProcessorTest#testBeanFactoryPostProcessor` for more details.
 
-BeanPostProcessor也是spring提供的容器扩展机制，不同于BeanFactoryPostProcessor的是，BeanPostProcessor在bean实例化后修改bean或替换bean。BeanPostProcessor是后面实现AOP的关键。
+`BeanPostProcessor` is also a container extension mechanism provided by Spring. Unlike `BeanFactoryPostProcessor`, `BeanPostProcessor` modifies or replaces beans **after** bean instantiation. It plays a critical role in AOP implementation.
 
-BeanPostProcessor的两个方法分别在bean执行初始化方法（后面实现）之前和之后执行，理解其实现重点看单元测试BeanFactoryPostProcessorAndBeanPostProcessorTest#testBeanPostProcessor和AbstractAutowireCapableBeanFactory#initializeBean方法，有些地方做了微调，可不必关注。
+The two methods of `BeanPostProcessor` are executed before and after the bean's initialization method (which will be discussed later). Key implementations can be found in the unit test `BeanFactoryPostProcessorAndBeanPostProcessorTest#testBeanPostProcessor` and the method `AbstractAutowireCapableBeanFactory#initializeBean`. Some minor adjustments have been made, but these can be ignored for now.
 
 ```java
 public interface BeanPostProcessor {
 	/**
-	 * 在bean执行初始化方法之前执行此方法
+	 * Executed before the bean's initialization method
 	 */
 	Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException;
 
 	/**
-	 * 在bean执行初始化方法之后执行此方法
+	 * Executed after the bean's initialization method
 	 */
 	Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException;
 }
 ```
 
-下一节将引入ApplicationContext，能自动识别BeanFactoryPostProcessor和BeanPostProcessor，就可以在xml文件中配置而不需要手动添加到BeanFactory了。
+Next section introduces `ApplicationContext`, which can automatically detect `BeanFactoryPostProcessor` and `BeanPostProcessor`. These can be configured in the XML file without manually adding them to the `BeanFactory`.
 
-测试：
+**Test:**
 ```java
 public class BeanFactoryProcessorAndBeanPostProcessorTest {
 
@@ -317,13 +320,13 @@ public class BeanFactoryProcessorAndBeanPostProcessorTest {
 		XmlBeanDefinitionReader beanDefinitionReader = new XmlBeanDefinitionReader(beanFactory);
 		beanDefinitionReader.loadBeanDefinitions("classpath:spring.xml");
 
-		//在所有BeanDefintion加载完成后，但在bean实例化之前，修改BeanDefinition的属性值
+		// Modify BeanDefinition properties before bean instantiation
 		CustomBeanFactoryPostProcessor beanFactoryPostProcessor = new CustomBeanFactoryPostProcessor();
 		beanFactoryPostProcessor.postProcessBeanFactory(beanFactory);
 
 		Person person = (Person) beanFactory.getBean("person");
 		System.out.println(person);
-		//name属性在CustomBeanFactoryPostProcessor中被修改为ivy
+		// Name changed to ivy in CustomBeanFactoryPostProcessor
 		assertThat(person.getName()).isEqualTo("ivy");
 	}
 
@@ -333,55 +336,60 @@ public class BeanFactoryProcessorAndBeanPostProcessorTest {
 		XmlBeanDefinitionReader beanDefinitionReader = new XmlBeanDefinitionReader(beanFactory);
 		beanDefinitionReader.loadBeanDefinitions("classpath:spring.xml");
 
-		//添加bean实例化后的处理器
+		// Add BeanPostProcessor to modify bean properties after instantiation
 		CustomerBeanPostProcessor customerBeanPostProcessor = new CustomerBeanPostProcessor();
 		beanFactory.addBeanPostProcessor(customerBeanPostProcessor);
 
 		Car car = (Car) beanFactory.getBean("car");
 		System.out.println(car);
-		//brand属性在CustomerBeanPostProcessor中被修改为lamborghini
+		// Brand changed to lamborghini in CustomerBeanPostProcessor
 		assertThat(car.getBrand()).isEqualTo("lamborghini");
 	}
 }
 ```
 
-## [应用上下文ApplicationContext](#应用上下文ApplicationContext)
-> 代码分支：application-context
+## [ApplicationContext](#applicationcontext)
+> Branch: `application-context`
 
-应用上下文ApplicationContext是spring中较之于BeanFactory更为先进的IOC容器，ApplicationContext除了拥有BeanFactory的所有功能外，还支持特殊类型bean如上一节中的BeanFactoryPostProcessor和BeanPostProcessor的自动识别、资源加载、容器事件和监听器、国际化支持、单例bean自动初始化等。
+`ApplicationContext` is an advanced IOC container in Spring, compared to `BeanFactory`. In addition to all the features of `BeanFactory`, it also supports:
+- Automatic detection of special beans like `BeanFactoryPostProcessor` and `BeanPostProcessor` (as discussed in the previous section)
+- Resource loading
+- Container events and listeners
+- Internationalization support
+- Automatic initialization of singleton beans
 
-BeanFactory是spring的基础设施，面向spring本身；而ApplicationContext面向spring的使用者，应用场合使用ApplicationContext。
+While `BeanFactory` is the infrastructure for Spring, `ApplicationContext` is designed for users of Spring applications.
 
-具体实现查看AbstractApplicationContext#refresh方法即可。注意BeanFactoryPostProcessor和BeanPostProcessor的自动识别，这样就可以在xml文件中配置二者而不需要像上一节一样手动添加到容器中了。
+For the implementation details, check the `AbstractApplicationContext#refresh` method. Note that `BeanFactoryPostProcessor` and `BeanPostProcessor` are automatically recognized, so you no longer need to manually add them to the container in the XML file as shown earlier.
 
-从bean的角度看，目前生命周期如下：
+The bean lifecycle looks like this:
 
 ![](./assets/application-context-life-cycle.png)
 
-测试：见ApplicationContextTest
+**Test:** See `ApplicationContextTest`
 
-## [bean的初始化和销毁方法](#bean的初始化和销毁方法)
-> 代码分支：init-and-destroy-method
+## [Bean Initialization and Destruction Methods](#bean-initialization-and-destruction-methods)
+> Branch: `init-and-destroy-method`
 
-在spring中，定义bean的初始化和销毁方法有三种方法：
-- 在xml文件中制定init-method和destroy-method
-- 继承自InitializingBean和DisposableBean
-- 在方法上加注解PostConstruct和PreDestroy
+In Spring, there are three ways to define initialization and destruction methods for beans:
+- Specify `init-method` and `destroy-method` in the XML configuration
+- Implement `InitializingBean` and `DisposableBean` interfaces
+- Use `@PostConstruct` and `@PreDestroy` annotations
 
-第三种通过BeanPostProcessor实现，在扩展篇中实现，本节只实现前两种。
+The third method is implemented via `BeanPostProcessor` and will be covered in the advanced section. This section only covers the first two methods.
 
-针对第一种在xml文件中指定初始化和销毁方法的方式，在BeanDefinition中增加属性initMethodName和destroyMethodName。
+For the first method (XML configuration), `initMethodName` and `destroyMethodName` properties are added to `BeanDefinition`.
 
-初始化方法在AbstractAutowireCapableBeanFactory#invokeInitMethods执行。DefaultSingletonBeanRegistry中增加属性disposableBeans保存拥有销毁方法的bean，拥有销毁方法的bean在AbstractAutowireCapableBeanFactory#registerDisposableBeanIfNecessary中注册到disposableBeans中。
+The initialization method is executed in `AbstractAutowireCapableBeanFactory#invokeInitMethods`. Beans with destruction methods are registered in `disposableBeans` in `DefaultSingletonBeanRegistry`, and are registered for destruction in `AbstractAutowireCapableBeanFactory#registerDisposableBeanIfNecessary`.
 
-为了确保销毁方法在虚拟机关闭之前执行，向虚拟机中注册一个钩子方法，查看AbstractApplicationContext#registerShutdownHook（非web应用需要手动调用该方法）。当然也可以手动调用ApplicationContext#close方法关闭容器。
+To ensure destruction methods run before the VM shuts down, a shutdown hook is registered in the JVM via `AbstractApplicationContext#registerShutdownHook` (this must be manually called in non-web applications). Alternatively, you can call `ApplicationContext#close` to close the container.
 
-到此为止，bean的生命周期如下：
+At this point, the bean lifecycle looks like this:
 
 ![](./assets/init-and-destroy-method.png)
 
-测试：
-init-and-destroy-method.xml
+**Test:** 
+<br> init-and-destroy-method.xml
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -441,28 +449,28 @@ public class InitAndDestoryMethodTest {
 	@Test
 	public void testInitAndDestroyMethod() throws Exception {
 		ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:init-and-destroy-method.xml");
-		applicationContext.registerShutdownHook();  //或者手动关闭 applicationContext.close();
+		applicationContext.registerShutdownHook();  // Alternatively, manually close using applicationContext.close();
 	}
 }
 ```
 
-## [Aware接口](#Aware接口)
-> 代码分支：aware-interface
+## [Aware Interface](#aware-interface)
+> Branch: `aware-interface`
 
-Aware是感知、意识的意思，Aware接口是标记性接口，其实现子类能感知容器相关的对象。常用的Aware接口有BeanFactoryAware和ApplicationContextAware，分别能让其实现者感知所属的BeanFactory和ApplicationContext。
+`Aware` refers to awareness. The `Aware` interface is a marker interface that allows implementing classes to be aware of container-related objects. Common `Aware` interfaces include `BeanFactoryAware` and `ApplicationContextAware`, which allow classes to be aware of their `BeanFactory` and `ApplicationContext`, respectively.
 
-让实现BeanFactoryAware接口的类能感知所属的BeanFactory，实现比较简单，查看AbstractAutowireCapableBeanFactory#initializeBean前三行。
+To make a class aware of its `BeanFactory`, it implements the `BeanFactoryAware` interface. This is done easily in `AbstractAutowireCapableBeanFactory#initializeBean` (the first three lines).
 
-实现ApplicationContextAware的接口感知ApplicationContext，是通过BeanPostProcessor。由bean的生命周期可知，bean实例化后会经过BeanPostProcessor的前置处理和后置处理。定义一个BeanPostProcessor的实现类ApplicationContextAwareProcessor，在AbstractApplicationContext#refresh方法中加入到BeanFactory中，在前置处理中为bean设置所属的ApplicationContext。
+To make a class aware of its `ApplicationContext`, the `ApplicationContextAware` interface is used via a `BeanPostProcessor`. After the bean is instantiated, it goes through the pre- and post-processing steps of `BeanPostProcessor`. We define a `BeanPostProcessor` implementation called `ApplicationContextAwareProcessor`, which is added to the `BeanFactory` in the `AbstractApplicationContext#refresh` method. The pre-processing step sets the `ApplicationContext` for the bean.
 
-改用dom4j解析xml文件。
+We now use `dom4j` to parse the XML file.
 
-至止，bean的生命周期如下：
+At this point, the bean lifecycle looks like this:
 
 ![](./assets/aware-interface.png)
 
-测试：
-spring.xml
+**Test:** 
+<br> spring.xml
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -518,17 +526,19 @@ public class AwareInterfaceTest {
 }
 ```
 
-## [bean作用域，增加prototype的支持](#bean作用域增加prototype的支持)
-> 代码分支：prototype-bean
+## [Bean Scope, Adding Support for Prototype](#bean-scope-adding-support-for-prototype)
+> Branch: `prototype-bean`
 
-每次向容器获取prototype作用域bean时，容器都会创建一个新的实例。在BeanDefinition中增加描述bean的作用域的字段scope，创建prototype作用域bean时（AbstractAutowireCapableBeanFactory#doCreateBean），不往singletonObjects中增加该bean。prototype作用域bean不执行销毁方法，查看AbstractAutowireCapableBeanFactory#registerDisposableBeanIfNecessary方法。
+For a `prototype` scoped bean, every time it's requested from the container, a new instance is created. We add a `scope` field in `BeanDefinition` to describe the bean's scope. When creating a prototype bean (`AbstractAutowireCapableBeanFactory#doCreateBean`), it is **not** added to the `singletonObjects` map. 
 
-至止，bean的生命周期如下：
+Prototype beans do not execute their destruction methods, as seen in `AbstractAutowireCapableBeanFactory#registerDisposableBeanIfNecessary`.
+
+At this point, the bean lifecycle looks like this:
 
 ![](./assets/prototype-bean.png)
 
-测试：
-prototype-bean.xml
+**Test:** 
+<br> prototype-bean.xml
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -561,14 +571,14 @@ public class PrototypeBeanTest {
 ```
 
 ## [FactoryBean](#FactoryBean)
-> 代码分支：factory-bean
+> Branch: `factory-bean`
 
-FactoryBean是一种特殊的bean，当向容器获取该bean时，容器不是返回其本身，而是返回其FactoryBean#getObject方法的返回值，可通过编码方式定义复杂的bean。
+`FactoryBean` is a special type of bean. When this bean is requested from the container, the container doesn't return the bean itself but instead returns the value from the `FactoryBean#getObject` method. This allows complex beans to be defined programmatically.
 
-实现逻辑比较简单，当容器发现bean为FactoryBean类型时，调用其getObject方法返回最终bean。当FactoryBean#isSingleton==true，将最终bean放进缓存中，下次从缓存中获取。改动点见AbstractBeanFactory#getBean。
+The logic is simple: when the container detects that a bean is of type `FactoryBean`, it calls its `getObject` method to return the actual bean. If `FactoryBean#isSingleton` is `true`, the resulting bean is cached and reused on subsequent requests. See changes in `AbstractBeanFactory#getBean`.
 
-测试：
-factory-bean.xml
+**Test:** 
+<br> factory-bean.xml
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -623,16 +633,15 @@ public class FactoryBeanTest {
 }
 ```
 
-## [容器事件和事件监听器](#容器事件和事件监听器)
+## [Container Events and Event Listeners](#container-events-and-event-listeners)
+> Branch: `event-and-event-listener`
 
-> 代码分支：event-and-event-listener
+The `ApplicationContext` container provides comprehensive event publishing and listener functionality.
 
-ApplicationContext容器提供了完善的事件发布和事件监听功能。
+The `ApplicationEventMulticaster` interface is the abstract interface for registering listeners and publishing events. `AbstractApplicationContext` contains an instance of its implementation, giving the `ApplicationContext` container the ability to register listeners and publish events. In the `AbstractApplicationContext#refresh` method, `ApplicationEventMulticaster` is instantiated, listeners are registered, and the container refresh event (`ContextRefreshedEvent`) is published. In the `AbstractApplicationContext#doClose` method, the container close event (`ContextClosedEvent`) is published.
 
-ApplicationEventMulticaster接口是注册监听器和发布事件的抽象接口，AbstractApplicationContext包含其实现类实例作为其属性，使得ApplicationContext容器具有注册监听器和发布事件的能力。在AbstractApplicationContext#refresh方法中，会实例化ApplicationEventMulticaster、注册监听器并发布容器刷新事件ContextRefreshedEvent；在AbstractApplicationContext#doClose方法中，发布容器关闭事件ContextClosedEvent。
-
-测试：
-event-and-event-listener.xml
+**Test:**
+<br> event-and-event-listener.xml
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -659,28 +668,28 @@ public class EventAndEventListenerTest {
 		ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:event-and-event-listener.xml");
 		applicationContext.publishEvent(new CustomEvent(applicationContext));
 
-		applicationContext.registerShutdownHook();//或者applicationContext.close()主动关闭容器;
+		applicationContext.registerShutdownHook(); // Or use applicationContext.close() to manually close the container
 	}
 }
 ```
 
-观察输出：
+Observe Output：
 ```
 org.springframework.test.common.event.ContextRefreshedEventListener
 org.springframework.test.common.event.CustomEventListener
 org.springframework.test.common.event.ContextClosedEventListener
 ```
 
-# [基础篇：AOP](#基础篇AOP)
+# [Basics: AOP](#basics-aop)
 
-## [切点表达式](#切点表达式)
-> 代码分支：pointcut-expression
+## [Pointcut Expression](#pointcut-expression)
+> Branch: `pointcut-expression`
 
-Joinpoint，织入点，指需要执行代理操作的某个类的某个方法(仅支持方法级别的JoinPoint)；Pointcut是JoinPoint的表述方式，能捕获JoinPoint。
+A **Joinpoint** is a specific method in a class where proxy operations need to be executed (only method-level JoinPoint is supported). A **Pointcut** defines the expression that captures the JoinPoint.
 
-最常用的切点表达式是AspectJ的切点表达式。需要匹配类，定义ClassFilter接口；匹配方法，定义MethodMatcher接口。PointCut需要同时匹配类和方法，包含ClassFilter和MethodMatcher，AspectJExpressionPointcut是支持AspectJ切点表达式的PointCut实现，简单实现仅支持execution函数。
+The most commonly used pointcut expression is AspectJ’s pointcut expression. To match a class, define the `ClassFilter` interface; to match a method, define the `MethodMatcher` interface. A **Pointcut** needs to match both the class and the method, and includes both `ClassFilter` and `MethodMatcher`. `AspectJExpressionPointcut` is an implementation of a Pointcut that supports AspectJ expressions, with a simple implementation that supports only the `execution` function.
 
-测试：
+**Test:**
 ```java
 public class HelloService {
 	public String sayHello() {
@@ -705,12 +714,12 @@ public class PointcutExpressionTest {
 }
 ```
 
-## [基于JDK的动态代理](#基于JDK的动态代理)
-> 代码分支：jdk-dynamic-proxy
+## [JDK-Based Dynamic Proxy](#jdk-based-dynamic-proxy)
+> Branch: `jdk-dynamic-proxy`
 
-AopProxy是获取代理对象的抽象接口，JdkDynamicAopProxy的基于JDK动态代理的具体实现。TargetSource，被代理对象的封装。MethodInterceptor，方法拦截器，是AOP Alliance的"公民"，顾名思义，可以拦截方法，可在被代理执行的方法前后增加代理行为。
+`AopProxy` is the abstract interface for obtaining proxy objects, and `JdkDynamicAopProxy` is the concrete implementation based on JDK dynamic proxies. `TargetSource` is the wrapper for the target object being proxied. `MethodInterceptor` is the method interceptor, a key concept from AOP Alliance. As the name suggests, it intercepts methods and can add proxy behavior before or after the method is executed.
 
-测试;
+**Test**
 ```java
 public class DynamicProxyTest {
 
@@ -732,12 +741,12 @@ public class DynamicProxyTest {
 }
 ```
 
-## [基于CGLIB的动态代理](#基于CGLIB的动态代理)
-> 代码分支：cglib-dynamic-proxy
+## [CGLIB-Based Dynamic Proxy](#cglib-based-dynamic-proxy)
+> Branch: `cglib-dynamic-proxy`
 
-基于CGLIB的动态代理实现逻辑也比较简单，查看CglibAopProxy。与基于JDK的动态代理在运行期间为接口生成对象的代理对象不同，基于CGLIB的动态代理能在运行期间动态构建字节码的class文件，为类生成子类，因此被代理类不需要继承自任何接口。
+The logic behind CGLIB-based dynamic proxy is simple, as seen in `CglibAopProxy`. Unlike JDK dynamic proxies, which generate proxy objects for interfaces at runtime, CGLIB dynamic proxies generate subclass bytecode files at runtime. This means that the target class does not need to implement any interface.
 
-测试：
+**Test:**
 ```java
 public class DynamicProxyTest {
 
@@ -764,12 +773,12 @@ public class DynamicProxyTest {
 }
 ```
 
-## [AOP代理工厂](#AOP代理工厂)
-> 代码分支：proxy-factory
+## [AOP Proxy Factory](#aop-proxy-factory)
+> Branch: `proxy-factory`
 
-增加AOP代理工厂ProxyFactory，由AdvisedSupport#proxyTargetClass属性决定使用JDK动态代理还是CGLIB动态代理。
+Added `ProxyFactory` for AOP proxies, which decides between JDK dynamic proxy or CGLIB dynamic proxy based on the `AdvisedSupport#proxyTargetClass` property.
 
-测试：
+**Test:**
 ```java
 public class DynamicProxyTest {
 
@@ -790,12 +799,12 @@ public class DynamicProxyTest {
 
 	@Test
 	public void testProxyFactory() throws Exception {
-		// 使用JDK动态代理
+		// Use JDK dynamic proxy
 		advisedSupport.setProxyTargetClass(false);
 		WorldService proxy = (WorldService) new ProxyFactory(advisedSupport).getProxy();
 		proxy.explode();
 
-		// 使用CGLIB动态代理
+		// Use CGLIB dynamic proxy
 		advisedSupport.setProxyTargetClass(true);
 		proxy = (WorldService) new ProxyFactory(advisedSupport).getProxy();
 		proxy.explode();
@@ -803,18 +812,18 @@ public class DynamicProxyTest {
 }
 ```
 
-## [几种常用的Advice：BeforeAdvice/AfterAdvice/AfterReturningAdvice/ThrowsAdvice...](#几种常用的AdviceBeforeAdviceAfterAdviceAfterReturningAdviceThrowsAdvice)
-> 代码分支： common-advice
+## [Common Advice Types: BeforeAdvice, AfterAdvice, AfterReturningAdvice, ThrowsAdvice](#common-advice-beforeadvice-afteradvice-afterreturningadvice-throwsadvice)
+> Branch: `common-advice`
 
-Spring将AOP联盟中的Advice细化出各种类型的Advice，常用的有BeforeAdvice/AfterAdvice/AfterReturningAdvice/ThrowsAdvice，我们可以通过扩展MethodInterceptor来实现。
+Spring refines the AOP alliance's Advice into different types, including `BeforeAdvice`, `AfterAdvice`, `AfterReturningAdvice`, and `ThrowsAdvice`. These can be implemented by extending `MethodInterceptor`.
 
-只简单实现BeforeAdvice，有兴趣的同学可以帮忙实现另外几种Advice。定义MethodBeforeAdviceInterceptor拦截器，在执行被代理方法之前，先执行BeforeAdvice的方法。
+For now, we only implement `BeforeAdvice`. If interested, other types of Advice can be implemented. We define a `MethodBeforeAdviceInterceptor` to execute the `BeforeAdvice` method before the target method is invoked.
 - [x] BeforeAdvice
 - [ ] AfterAdvice
 - [ ] AfterReturningAdvice
-- [ ] ThrowsAdvice   
+- [ ] ThrowsAdvice
 
-测试：
+**Test:**
 ```java
 public class WorldServiceBeforeAdvice implements MethodBeforeAdvice {
 
@@ -854,12 +863,12 @@ public class DynamicProxyTest {
 }
 ```
 
-## [PointcutAdvisor：Pointcut和Advice的组合](#PointcutAdvisorPointcut和Advice的组合)
-> 代码分支：pointcut-advisor
+## [PointcutAdvisor: Combination of Pointcut and Advice](#pointcutadvisor-pointcut-and-advice-combination)
+> Branch: `pointcut-advisor`
 
-Advisor是包含一个Pointcut和一个Advice的组合，Pointcut用于捕获JoinPoint，Advice决定在JoinPoint执行某种操作。实现了一个支持aspectj表达式的AspectJExpressionPointcutAdvisor。
+An `Advisor` is a combination of a `Pointcut` and an `Advice`. The `Pointcut` captures the `JoinPoint`, and the `Advice` determines what action to take at that point. We implement an `AspectJExpressionPointcutAdvisor` that supports AspectJ expressions.
 
-测试：
+**Test:**
 ```java
 public class DynamicProxyTest {
 
@@ -867,7 +876,7 @@ public class DynamicProxyTest {
 	public void testAdvisor() throws Exception {
 		WorldService worldService = new WorldServiceImpl();
 
-		//Advisor是Pointcut和Advice的组合
+		// Advisor combines Pointcut and Advice
 		String expression = "execution(* org.springframework.test.service.WorldService.explode(..))";
 		AspectJExpressionPointcutAdvisor advisor = new AspectJExpressionPointcutAdvisor();
 		advisor.setExpression(expression);
@@ -890,20 +899,20 @@ public class DynamicProxyTest {
 }
 ```
 
-## [动态代理融入bean生命周期](#动态代理融入bean生命周期)
+## [Dynamic Proxy in Bean Lifecycle](#dynamic-proxy-in-bean-lifecycle)
 
-> 代码分支：auto-proxy
+> Branch: `auto-proxy`
 
-结合前面讲解的bean的生命周期，BeanPostProcessor处理阶段可以修改和替换bean，正好可以在此阶段返回代理对象替换原对象。不过我们引入一种特殊的BeanPostProcessor——InstantiationAwareBeanPostProcessor，如果InstantiationAwareBeanPostProcessor处理阶段返回代理对象，会导致短路，不会继续走原来的创建bean的流程，具体实现查看AbstractAutowireCapableBeanFactory#resolveBeforeInstantiation。
+In the bean lifecycle, the `BeanPostProcessor` phase allows modifying and replacing beans. This is where we can return a proxy object to replace the original bean. We introduce a special `BeanPostProcessor` called `InstantiationAwareBeanPostProcessor`. If this processor returns a proxy object, it short-circuits the process and prevents the original bean creation flow. See `AbstractAutowireCapableBeanFactory#resolveBeforeInstantiation` for details.
 
-DefaultAdvisorAutoProxyCreator是处理横切逻辑的织入返回代理对象的InstantiationAwareBeanPostProcessor实现类，当对象实例化时，生成代理对象并返回。
+`DefaultAdvisorAutoProxyCreator` is an implementation of `InstantiationAwareBeanPostProcessor` that weaves cross-cutting logic and returns the proxy object during instantiation.
 
-至此，bean的生命周期如下：
+At this point, the bean lifecycle looks like this:
 
 ![](./assets/auto-proxy.png)
 
-测试：
-auto-proxy.xml
+**Test:**
+<br> auto-proxy.xml
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -939,24 +948,24 @@ public class AutoProxyTest {
 	public void testAutoProxy() throws Exception {
 		ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:auto-proxy.xml");
 
-		//获取代理对象
+		// Get the proxy object
 		WorldService worldService = applicationContext.getBean("worldService", WorldService.class);
 		worldService.explode();
 	}
 }
 ```
 
-# [扩展篇](#扩展篇)
+# [Extensions](#extensions)
 
 ## [PropertyPlaceholderConfigurer](#PropertyPlaceholderConfigurer)
-> 代码分支：property-placeholder-configurer
+> Branch: `property-placeholder-configurer`
 
-经常需要将配置信息配置在properties文件中，然后在XML文件中以占位符的方式引用。
+It is common to store configuration data in a `properties` file and reference it in an XML file using placeholders.
 
-实现思路很简单，在bean实例化之前，编辑BeanDefinition，解析XML文件中的占位符，然后用properties文件中的配置值替换占位符。而BeanFactoryPostProcessor具有编辑BeanDefinition的能力，因此PropertyPlaceholderConfigurer继承自BeanFactoryPostProcessor。
+The implementation is simple: before bean instantiation, we edit the `BeanDefinition`, parse the placeholders in the XML, and replace them with values from the `properties` file. Since `BeanFactoryPostProcessor` has the ability to edit `BeanDefinition`, `PropertyPlaceholderConfigurer` extends `BeanFactoryPostProcessor`.
 
-测试：
-car.properties
+**Test:**
+<br> car.properties
 ```properties
 brand=lamborghini
 ```
@@ -995,14 +1004,14 @@ public class PropertyPlaceholderConfigurerTest {
 }
 ```
 
-## [包扫描](#包扫描)
-> 代码分支：package-scan
+## [Package Scan](#package-scan)
+> Branch: `package-scan`
 
-结合bean的生命周期，包扫描只不过是扫描特定注解的类，提取类的相关信息组装成BeanDefinition注册到容器中。
+In the bean lifecycle, package scanning is simply about scanning classes with specific annotations, extracting relevant information from the class, and assembling it into a `BeanDefinition` that is then registered in the container.
 
-在XmlBeanDefinitionReader中解析```<context:component-scan />```标签，扫描类组装BeanDefinition然后注册到容器中的操作在ClassPathBeanDefinitionScanner#doScan中实现。
+The process of parsing the `<context:component-scan />` tag in `XmlBeanDefinitionReader` to scan classes and register `BeanDefinition` in the container is implemented in `ClassPathBeanDefinitionScanner#doScan`.
 
-测试：
+**Test:**
 ```java
 @Component
 public class Car {
@@ -1039,14 +1048,14 @@ public class PackageScanTest {
 }
 ```
 
-## [@Value注解](#Value注解)
-> 代码分支：value-annotation
+## [@Value Annotation](#Value-annotation)
+> Branch: `value-annotation`
 
-注解@Value和@Autowired通过BeanPostProcessor处理。InstantiationAwareBeanPostProcessor增加postProcessPropertyValues方法，在bean实例化之后设置属性之前执行，查看AbstractAutowireCapableBeanFactory#doCreateBean方法。
+The `@Value` annotation, like `@Autowired`, is processed through `BeanPostProcessor`. The `InstantiationAwareBeanPostProcessor` adds the `postProcessPropertyValues` method, which is executed after bean instantiation but before setting properties, as seen in `AbstractAutowireCapableBeanFactory#doCreateBean`.
 
-增加AutowiredAnnotationBeanPostProcessor用于处理注解@Value，@Autowired的处理在下一节实现，在ClassPathBeanDefinitionScanner#doScan将其添加到容器中。查看AutowiredAnnotationBeanPostProcessor#postProcessPropertyValues，其中字符解析器StringValueResolver在PropertyPlaceholderConfigurer中添加到BeanFactory中。
+The `AutowiredAnnotationBeanPostProcessor` is introduced to handle annotations like `@Value` and `@Autowired`. The processing of these annotations will be covered in the next section. The processor is added to the container in `ClassPathBeanDefinitionScanner#doScan`. In `AutowiredAnnotationBeanPostProcessor#postProcessPropertyValues`, the string resolver `StringValueResolver` is added to the `BeanFactory` via `PropertyPlaceholderConfigurer`.
 
-测试：
+**Test:**
 ```java
 @Component
 public class Car {
@@ -1094,12 +1103,12 @@ public class ValueAnnotationTest {
 }
 ```
 
-## [@Autowired注解](#Autowired注解)
-> 代码分支：autowired-annotation
+## [@Autowired Annotation](#Autowired-annotation)
+> Branch: `autowired-annotation`
 
-@Autowired注解的处理见AutowiredAnnotationBeanPostProcessor#postProcessPropertyValues
+The processing of the `@Autowired` annotation can be found in `AutowiredAnnotationBeanPostProcessor#postProcessPropertyValues`.
 
-测试：
+**Test:**
 ```java
 @Component
 public class Car {
@@ -1141,23 +1150,26 @@ public class AutowiredAnnotationTest {
 	}
 }
 ```
-## [bug fix：没有为代理bean设置属性（discovered and fixed by @kerwin89）](#bug-fix没有为代理bean设置属性discovered-and-fixed-by-kerwin89)
-> 代码分支: populate-proxy-bean-with-property-values
+## [Bug Fix: Proxy Bean Not Receiving Properties (Discovered and Fixed by @kerwin89)](#bug-fix-no-property-set-for-proxy-bean-discovered-and-fixed-by-kerwin89)
+> Branch: `populate-proxy-bean-with-property-values`
 
-问题现象：没有为代理bean设置属性
+### Issue:
+The proxy bean was not receiving its properties.
 
-问题原因：织入逻辑在InstantiationAwareBeanPostProcessor#postProcessBeforeInstantiation中执行，而该方法如果返回非null，会导致"短路"，不会执行后面的设置属性逻辑。因此如果该方法中返回代理bean后，不会为代理bean设置属性。
+### Cause:
+The weaving logic in `InstantiationAwareBeanPostProcessor#postProcessBeforeInstantiation` was executed, and if it returned a non-null value, it caused a "short-circuit," skipping the property setting logic. Therefore, if the method returned a proxy bean, its properties were not set.
 
-修复方案：跟spring保持一致，将织入逻辑迁移到BeanPostProcessor#postProcessAfterInitialization，即将DefaultAdvisorAutoProxyCreator#postProcessBeforeInstantiation的内容迁移到DefaultAdvisorAutoProxyCreator#postProcessAfterInitialization中。
+### Solution:
+To align with Spring's behavior, the weaving logic was moved to `BeanPostProcessor#postProcessAfterInitialization`. Specifically, the content of `DefaultAdvisorAutoProxyCreator#postProcessBeforeInstantiation` was moved to `DefaultAdvisorAutoProxyCreator#postProcessAfterInitialization`.
 
-顺便完善spring的扩展机制，为InstantiationAwareBeanPostProcessor增加postProcessAfterInstantiation方法，该方法在bean实例化之后设置属性之前执行。
+Additionally, Spring’s extension mechanism was enhanced by adding `postProcessAfterInstantiation` to `InstantiationAwareBeanPostProcessor`, which executes after bean instantiation but before property setting.
 
-至此，bean的生命周期比较完整了，如下：
+With this change, the bean lifecycle is now more complete, as shown below:
 
 ![](./assets/populate-proxy-bean-with-property-values.png)
 
-测试：
-populate-proxy-bean-with-property-values.xml
+**Test:**
+<br> populate-proxy-bean-with-property-values.xml
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -1210,7 +1222,7 @@ public class AutoProxyTest {
 	public void testPopulateProxyBeanWithPropertyValues() throws Exception {
 		ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:populate-proxy-bean-with-property-values.xml");
 
-		//获取代理对象
+		// Get the proxy bean
 		WorldService worldService = applicationContext.getBean("worldService", WorldService.class);
 		worldService.explode();
 		assertThat(worldService.getName()).isEqualTo("earth");
@@ -1218,22 +1230,22 @@ public class AutoProxyTest {
 }
 ```
 
-## [类型转换（一）](#类型转换一)
-> 代码分支：type-conversion-first-part
+## [Type Conversion (Part 1)](#type-conversion-part-1)
+> Branch: `type-conversion-first-part`
 
-spring在org.springframework.core.convert.converter包中定义了三种类型转换器接口：Converter、ConverterFactory、GenericConverter。
+Spring defines three types of converters in the `org.springframework.core.convert.converter` package: `Converter`, `ConverterFactory`, and `GenericConverter`.
 
-### 一、Converter
+### 1. Converter
 ```java
 public interface Converter<S, T> {
 
 	/**
-	 * 类型转换
+	 * Convert the source type to the target type
 	 */
 	T convert(S source);
 }
 ```
-Converter能将S类型的对象转换为T类型的对象，比如将String类型的对象转换为Integer类型的对象的实现类：
+The `Converter` interface can convert an object of type `S` to an object of type `T`. For example, here is an implementation that converts a `String` to an `Integer`:
 ```java
 public class StringToIntegerConverter implements Converter<String, Integer> {
 	@Override
@@ -1242,21 +1254,22 @@ public class StringToIntegerConverter implements Converter<String, Integer> {
 	}
 }
 ```
-使用：
+**Use:**
 ```java
 Integer num = new StringToIntegerConverter().convert("8888");
 ```
 
-### 二、ConverterFactory
+### 2. ConverterFactory
 ```java
 public interface ConverterFactory<S, R> {
 
 	<T extends R> Converter<S, T> getConverter(Class<T> targetType);
 }
 ```
-Converter<S,T>接口适合一对一的类型转换，如果要将String类型转换为Ineger/Long/Float/Double/Decimal等类型，就要实现一系列的StringToInteger/StringToLongConverter/StringToFloatConverter转换器，非常不优雅。
 
-ConverterFactory接口则适合一对多的类型转换，可以将一种类型转换为另一种类型及其子类。比如将String类型转换为Ineger/Long/Float/Double/Decimal等Number类型时，只需定义一个ConverterFactory转换器：
+The `Converter<S, T>` interface is suitable for one-to-one type conversions. For example, to convert a `String` to `Integer`, `Long`, `Float`, `Double`, or `Decimal`, you would need to implement separate converters like `StringToInteger`, `StringToLongConverter`, etc. This approach can become cumbersome and unclean.
+
+The `ConverterFactory` interface is more suitable for one-to-many type conversions. It allows you to convert one type to other types or their subclasses. For instance, to convert a `String` to multiple `Number` types like `Integer`, `Long`, `Float`, etc., you can implement a single `ConverterFactory`:
 ```java
 public class StringToNumberConverterFactory implements ConverterFactory<String, Number> {
 
@@ -1284,7 +1297,7 @@ public class StringToNumberConverterFactory implements ConverterFactory<String, 
 			} else if (targetType.equals(Long.class)) {
 				return (T) Long.valueOf(source);
 			}
-			//TODO 其他数字类型
+			// TODO handle other number types
 
 			else {
 				throw new IllegalArgumentException(
@@ -1295,14 +1308,14 @@ public class StringToNumberConverterFactory implements ConverterFactory<String, 
 
 }
 ```
-使用：
+**Use:**
 ```java
 StringToNumberConverterFactory converterFactory = new StringToNumberConverterFactory();
 Converter<String, Integer> stringToIntegerConverter = converterFactory.getConverter(Integer.class);
 Integer num = stringToIntegerConverter.convert("8888");
 ```
 
-### 三、GenericConverter
+### 3. GenericConverter
 ```java
 public interface GenericConverter {
 
@@ -1311,7 +1324,7 @@ public interface GenericConverter {
 	Object convert(Object source, Class sourceType, Class targetType);
 }
 ```
-String类型转换为Boolean类型的实现类：
+Here is an implementation to convert `String` to `Boolean` using `GenericConverter`:
 ```java
 public class StringToBooleanConverter implements GenericConverter {
 	@Override
@@ -1325,32 +1338,32 @@ public class StringToBooleanConverter implements GenericConverter {
 	}
 }
 ```
-使用:
+**Use:**
 ```java
 Boolean flag = new StringToBooleanConverter().convert("true", String.class, Boolean.class);
 ```
 
-ConversionService是类型转换体系的核心接口，将以上三种类型转换器整合到一起，GenericConversionService是其实现类，DefaultConversionService在GenericConversionService的基础上添加内置转换器。
+`ConversionService` is the core interface of the type conversion system. It integrates the three types of converters mentioned earlier. `GenericConversionService` is its implementation, and `DefaultConversionService` adds built-in converters on top of it.
 
-测试见TypeConversionFirstPartTest。
+**Test:** See `TypeConversionFirstPartTest`
 
-## [类型转换（二）](#类型转换二)
-> 代码分支：type-conversion-second-part
+## [Type Conversion (Part 2)](#type-conversion-part-2)
+> Branch: `type-conversion-second-part`
 
-上一节实现了spring中的类型转换体系，本节将类型转换的能力整合到容器中。
+In the previous section, we implemented the type conversion system in Spring. In this section, we integrate the type conversion capabilities into the container.
 
-为了方便使用，提供了创建ConversionService的FactoryBean——ConversionServiceFactoryBean。
+To make it easier to use, Spring provides a `ConversionService` factory bean: `ConversionServiceFactoryBean`.
 
-如果有定义ConversionService，在AbstractApplicationContext#finishBeanFactoryInitialization方法中设置到容器中。
+If a `ConversionService` is defined, it will be set into the container in the `AbstractApplicationContext#finishBeanFactoryInitialization` method.
 
-类型转换的时机有两个：
+There are two points in time when type conversion occurs:
 
-- 为bean填充属性时，见AbstractAutowireCapableBeanFactory#applyPropertyValues 
-- 处理@Value注解时，见AutowiredAnnotationBeanPostProcessor#postProcessPropertyValues
+- When filling bean properties: See `AbstractAutowireCapableBeanFactory#applyPropertyValues`.
+- When processing `@Value` annotations: See `AutowiredAnnotationBeanPostProcessor#postProcessPropertyValues`.
 
-你可能会有疑问，如果没有定义ConversionService，是怎么进行基本类型的转换的？其实spring为了向下兼容保留了一套比较旧的类型转换机制，没有定义ConversionService时会使用其进行基本类型的转换工作，不必关注旧的类型转换机制。
+You might wonder how basic type conversion works if no `ConversionService` is defined. Spring maintains an older type conversion mechanism for backward compatibility. If no `ConversionService` is defined, it uses this old mechanism for basic type conversions, so you don't need to worry about it.
 
-测试：
+**Test:**
 ```java
 public class Car {
 
@@ -1415,14 +1428,14 @@ public class TypeConversionSecondPartTest {
 }
 ```
 
-# [高级篇](#高级篇)
+# [Advanced Part](#advanced-part)
 
-## [解决循环依赖问题（一）：没有代理对象](#解决循环依赖问题一没有代理对象)
-> 代码分支：circular-reference-without-proxy-bean
+## [Solving Circular Dependency Problem (Part 1): Without Proxy Objects](#solving-circular-dependency-problem-1-without-proxy-objects)
+> Branch: `circular-reference-without-proxy-bean`
 
-虽然放在高级篇，其实解决循环依赖问题的方法非常简单。
+Although this is in the advanced section, the solution to the circular dependency problem is actually very simple.
 
-先理解spring中为什么会有循环依赖的问题。比如如下的代码
+First, let's understand why circular dependencies occur in Spring. For example, consider the following code:
 
 ```java
 public class A {
@@ -1453,58 +1466,53 @@ public class B {
 </beans>
 ```
 
-A依赖B，B又依赖A，循环依赖。容器加载时会执行依赖流程：
+A depends on B, and B depends on A, creating a circular dependency. During container loading, the dependency process happens as follows:
 
-- 实例化A，发现依赖B，然后实例化B
-- 实例化B，发现依赖A，然后实例化A
-- 实例化A，发现依赖B，然后实例化B
-- ...
+- Instantiate A, find dependency B, then instantiate B.
+- Instantiate B, find dependency A, then instantiate A.
+- Repeat, causing infinite recursion and stack overflow.
 
-死循环直至栈溢出。
+The key to solving this problem lies in when to add the instantiated bean to the container — before or after setting properties. In the current process, beans are added to `singletonObjects` after instantiation and property setting. To solve this, we can change the order so the bean is added to `singletonObjects` right after instantiation, exposing the reference early, and then setting properties. This changes the flow to:
 
-解决该问题的关键在于何时将实例化后的bean放进容器中，设置属性前还是设置属性后。现有的执行流程，bean实例化后并且设置属性后会被放进singletonObjects单例缓存中。如果我们调整一下顺序，当bean实例化后就放进singletonObjects单例缓存中，提前暴露引用，然后再设置属性，就能解决上面的循环依赖问题，执行流程变为：
+- Step 1: GetBean(A), check `singletonObjects`, A is not in it, instantiate A and add to `singletonObjects`, set property B, find dependency B, try GetBean(B).
+- Step 2: GetBean(B), check `singletonObjects`, B is not in it, instantiate B and add to `singletonObjects`, set property A, find dependency A, try GetBean(A).
+- Step 3: GetBean(A), check `singletonObjects`, A is in it, return A.
+- Step 4: B gets A and sets property A, then return B.
+- Step 5: A gets B, sets property B, then return A.
 
-- 步骤一：getBean(a)，检查singletonObjects是否包含a，singletonObjects不包含a，实例化A放进singletonObjects，设置属性b，发现依赖B，尝试getBean(b)
-- 步骤二：getBean(b)，检查singletonObjects是否包含b，singletonObjects不包含b，实例化B放进singletonObjects，设置属性a，发现依赖A，尝试getBean(a)
-- 步骤三：getBean(a)，检查singletonObjects是否包含a，singletonObjects包含a，返回a
-- 步骤四：步骤二中的b拿到a，设置属性a，然后返回b
-- 步骤五：步骤一中的a拿到b，设置属性b，然后返回a
+Thus, adjusting the timing of adding beans to `singletonObjects` after instantiation solves the circular dependency. To align with Spring, we introduce a second-level cache `earlySingletonObjects`, where the bean is stored after instantiation. During `getBean()`, we check both caches (`singletonObjects` and `earlySingletonObjects`).
 
-可见调整bean放进singletonObjects（人称一级缓存）的时机到bean实例化后即可解决循环依赖问题。但为了和spring保持一致，我们增加一个二级缓存earlySingletonObjects，在bean实例化后将bean放进earlySingletonObjects中（见AbstractAutowireCapableBeanFactory#doCreateBean方法第6行），getBean()时检查一级缓存singletonObjects和二级缓存earlySingletonObjects中是否包含该bean，包含则直接返回（见AbstractBeanFactory#getBean第1行）。
+Tests are in `CircularReferenceWithoutProxyBeanTest#testCircularReference`.
 
-单测见CircularReferenceWithoutProxyBeanTest#testCircularReference。
+However, adding the second-level cache does not solve circular dependencies with proxy beans. The reason is that the bean in the `earlySingletonObjects` cache is the instantiated bean, while the bean in the `singletonObjects` cache is the proxy (the proxy is returned in `BeanPostProcessor#postProcessAfterInitialization`). Therefore, when A is proxied, B receives the instantiated version of A, not the proxied version. This leads to `b.getA() != a`, as shown in `CircularReferenceWithProxyBeanTest`.
 
-增加二级缓存，不能解决有代理对象时的循环依赖。原因是放进二级缓存earlySingletonObjects中的bean是实例化后的bean，而放进一级缓存singletonObjects中的bean是代理对象（代理对象在BeanPostProcessor#postProcessAfterInitialization中返回），两个缓存中的bean不一致。比如上面的例子，如果A被代理，那么B拿到的a是实例化后的A，而a是被代理后的对象，即b.getA() != a，见单测CircularReferenceWithProxyBeanTest。
+The next section addresses this.
 
-下一节填坑。
+## [Solving Circular Dependency Problem (Part 2): With Proxy Beans](#solving-circular-dependency-problem-2-with-proxy-beans)
+> Branch: `circular-reference-with-proxy-bean`
 
-## [解决循环依赖问题（二）：有代理对象](#解决循环依赖问题二有代理对象)
-> 代码分支：circular-reference-with-proxy-bean
+To solve circular dependencies with proxy beans, we need to expose the proxy bean reference early, not the instantiated bean reference (this is the issue left from the previous section).
 
-解决有代理对象时的循环依赖问题，需要提前暴露代理对象的引用，而不是暴露实例化后的bean的引用（这是上节的遗留问题的原因，应该提前暴露A的代理对象的引用）。
+Spring uses `singletonFactories` (often called the third-level cache) to handle circular dependencies with proxy beans. After instantiation, we expose the proxy reference (see `AbstractAutowireCapableBeanFactory#doCreateBean`).
 
-spring中用singletonFactories（一般称第三级缓存）解决有代理对象时的循环依赖问题。在实例化后提前暴露代理对象的引用（见AbstractAutowireCapableBeanFactory#doCreateBean方法第6行）。
+When `getBean()` is called, it checks `singletonObjects`, `earlySingletonObjects`, and `singletonFactories` in sequence. If the bean is found in the third-level cache, it is moved to the second-level cache and returned. Finally, the proxy bean is added to `singletonObjects` (see `AbstractAutowireCapableBeanFactory`).
 
-getBean()时依次检查一级缓存singletonObjects、二级缓存earlySingletonObjects和三级缓存singletonFactories中是否包含该bean。如果三级缓存中包含该bean，则挪至二级缓存中，然后直接返回该bean。见AbstractBeanFactory#getBean方法第1行。
+Tests are in `CircularReferenceWithProxyBeanTest`.
 
-最后将代理bean放进一级缓存singletonObjects，见AbstractAutowireCapableBeanFactory第104行。
+## [Support for Lazy Initialization and Multiple Aspect Enhancements (By @zqczgl)](#support-for-lazy-init-and-multi-advice-by-zqczgl)
 
-单测见CircularReferenceWithProxyBeanTest。
+### [Lazy Initialization](#lazy-initialization)
 
-## [支持懒加载和多切面增强(By @zqczgl)](#支持懒加载和多切面增强by-zqczgl)
+> Branch: `lazy-init-and-multi-advice`
 
-### [懒加载](#懒加载)
+In fact, not all beans are created when initializing the container. As the project grows, so do the number of beans. If every bean is loaded at startup, it would waste a lot of resources. Spring provides lazy initialization, allowing beans that are not needed immediately to be created only when accessed.
 
-> 代码分支:  lazy-init-and-multi-advice
-
-事实上，并不是所有的bean在初始化容器的时候都会创建。随着项目规模的不断扩大，bean的数目也越来越多。如果每次启动容器都需要加载大量的bean，这无疑会带来大量的资源浪费。所有spring提供了懒加载机制，我们可以将我们认为暂时用不到的bean设为懒加载，这样只有在我们需要这个bean的时候这个bean才会被创建。
-
-测试
+Test
 
 lazy-test.xml
 
 ```java
-//只有当bean是单例且不为懒加载才会被创建	
+// Only create the bean if it is a singleton and not lazy-loaded	
 public void preInstantiateSingletons() throws BeansException {
 		beanDefinitionMap.forEach((beanName, beanDefinition) -> {
 			if(beanDefinition.isSingleton()&&!beanDefinition.isLazyInit()){
@@ -1522,7 +1530,7 @@ public class LazyInitTest {
         System.out.println(System.currentTimeMillis()+":applicationContext-over");
         TimeUnit.SECONDS.sleep(1);
         Car c= (Car) applicationContext.getBean("car");
-        c.showTime();//显示bean的创建时间
+        c.showTime(); // Show the creation time of the bean
     }
 }
 ```
@@ -1539,31 +1547,31 @@ public class LazyInitTest {
 
 ```
 
-关闭懒加载的输出:
+Without Lazy Initialization:
 
 ```
 1671698959957:applicationContext-over
 1671698959951:bean create
 ```
 
-开启懒加载：
+With Lazy Initialization:
 
 ```
 1671699030293:applicationContext-over
 1671699031328:bean create
 ```
 
-可以清楚的看到开启和不开启懒加载bean的创建时机的差异
+You can clearly see the difference in bean creation timing with and without lazy loading.
 
-### [多个切面匹配同一方法](#多个切面匹配同一方法)
+### [Multiple Aspects for the Same Method](#multiple-aspects-for-the-same-method)
 
-> 代码分支:  lazy-init-and-multi-advice
+> Branch: `lazy-init-and-multi-advice`
 
-虽然在前面我们完成了对方法的增强，但并不完美。我们的目前的代码只能支持对方法的单个增强。作为spring的核心功能如果不支持多切面的话有点太别扭了。spring利用了拦截器链来完成了对多个切面的支持。
+Although we’ve enhanced methods, it’s not perfect. Currently, the code only supports a single enhancement per method. It feels awkward not supporting multiple aspects, which is a core feature in Spring. Spring uses an interceptor chain to support multiple aspects.
 
 #### [ProxyFactory](#ProxyFactory)
 
-让我们从ProxyFactory开始，来看一下代理对象的整个创建流程。至于为什么从ProxyFactory开，这是因为代理对象最终是用ProxyFactory的getProxy()函数来获得的。
+Let’s start with `ProxyFactory` to understand the proxy object creation process. We start with `ProxyFactory` because the proxy object is eventually created using its `getProxy()` method.
 
 ```java
 public class ProxyFactory extends AdvisedSupport{
@@ -1585,11 +1593,11 @@ public class ProxyFactory extends AdvisedSupport{
 }
 ```
 
-为了更贴合spring的实现，这里更改了ProxyFactory使其继承了AdvisedSupport，正如spring源码中做的那样。
+To better match Spring's implementation, we modified `ProxyFactory` to inherit from `AdvisedSupport`, just like in Spring's source code.
 
-#### [基于JDK动态代理](#基于JDK动态代理)
+#### [JDK Dynamic Proxy](#jdk-dynamic-proxy)
 
-ProxyFactory只是简单的做了下选择，当我们设置proxyTargetClass属性或者被代理对象没有接口时会调用cjlib动态代理，否则调用jdk动态代理。二者实现并没有太大区别，这里只贴出jdk动态代理的实现。
+`ProxyFactory` simply chooses between JDK dynamic proxy or CGLIB proxy. If the `proxyTargetClass` property is set or the target object has no interfaces, it uses CGLIB. Otherwise, it uses JDK dynamic proxy. Below is the implementation for JDK dynamic proxy.
 
 ```java
 	public Object getProxy() {
@@ -1598,31 +1606,31 @@ ProxyFactory只是简单的做了下选择，当我们设置proxyTargetClass属�
 
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-		// 获取目标对象
+		// Get the target object
 		Object target=advised.getTargetSource().getTarget();
 		Class<?> targetClass = target.getClass();
 		Object retVal = null;
-		// 获取拦截器链
+		// Get the interceptor chain
 		List<Object> chain = this.advised.getInterceptorsAndDynamicInterceptionAdvice(method, targetClass);
 		if(chain==null||chain.isEmpty()){
 			return method.invoke(target, args);
 		}else{
-			// 将拦截器统一封装成ReflectiveMethodInvocation
+			// Wrap the interceptors in ReflectiveMethodInvocation
 			MethodInvocation invocation =
 					new ReflectiveMethodInvocation(proxy, target, method, args, targetClass, chain);
 			// Proceed to the joinpoint through the interceptor chain.
-			// 执行拦截器链
+			// Execute the interceptor chain
 			retVal = invocation.proceed();
 		}
 		return retVal;
 	}
 ```
 
-jdk动态代理可以分为获取拦截器链，将拦截器统一封装成ReflectiveMethodInvocation，执行拦截器链三部分。我们来逐一看一下这三部分。
+JDK dynamic proxy can be broken down into three parts: getting the interceptor chain, wrapping interceptors in `ReflectiveMethodInvocation`, and executing the interceptor chain. Let's go through each part.
 
-##### [1.获取拦截器链](#1.获取拦截器链)
+##### [1. Getting the Interceptor Chain](#1-getting-the-interceptor-chain)
 
-首先将获取到所有与当前method匹配的advice(增强)，跟踪getInterceptorsAndDynamicInterceptionAdvice代码，我们发现Spring AOP也使用缓存进行提高性能，如果该方法已经获取过拦截器，则直接取缓存，否则通过advisorChainFactory获取拦截器链。AdvisorChainFactory是用来获得拦截器链接口。它的一个实现类为DefaultAdvisorChainFactory
+First, all advice (enhancements) matching the current method are retrieved. By tracing `getInterceptorsAndDynamicInterceptionAdvice`, we see that Spring AOP uses caching for performance. If the interceptors for the method are already cached, they are used directly. Otherwise, the interceptors are fetched through `advisorChainFactory`. `AdvisorChainFactory` is responsible for obtaining the interceptor chain. One of its implementations is `DefaultAdvisorChainFactory`.
 
 AdvisedSupport#getInterceptorsAndDynamicInterceptionAdvice：
 
@@ -1639,7 +1647,9 @@ AdvisedSupport#getInterceptorsAndDynamicInterceptionAdvice：
 	}
 ```
 
-整体代码并不复杂，首先获取所有Advisor(切面)，通过pointcutAdvisor.getPointcut().getClassFilter().matches(actualClass)校验当前代理对象是否匹配该Advisor，再通过pointcutAdvisor.getPointcut().getMethodMatcher()校验是否匹配当前调用method。如果通过校验，则提取advisor中的interceptors增强，添加到interceptorList中。这里可能有读者会疑惑，我们明明是要获取MethodInterceptor，可AdvisedSupport的getAdvice()返回的是Advice(增强),其实如果我们点开MethodInterceptor的源码，我们会发现MethodInterceptor继承了Interceptor接口，而Interceptor又继承了Advice接口。因为这里的Advice和MethodInterceptor我们都是用的AOP联盟的接口，所以特此说明一下。
+The code is not complex. First, all `Advisor`s (aspects) are retrieved. The `pointcutAdvisor.getPointcut().getClassFilter().matches(actualClass)` checks if the current proxy object matches the `Advisor`, then `pointcutAdvisor.getPointcut().getMethodMatcher()` checks if it matches the current method being called. If both checks pass, the interceptors (enhancements) from the `Advisor` are added to the `interceptorList`.
+
+You might wonder why we are getting `MethodInterceptor`, but `AdvisedSupport.getAdvice()` returns `Advice`. The reason is that `MethodInterceptor` implements `Interceptor`, which extends `Advice`, as per AOP Alliance interfaces.
 
 DefultAdvisorChainFactory#getInterceptorsAndDynamicInterceptionAdvice
 
@@ -1652,11 +1662,11 @@ public List<Object> getInterceptorsAndDynamicInterceptionAdvice(AdvisedSupport c
             if (advisor instanceof PointcutAdvisor) {
                 // Add it conditionally.
                 PointcutAdvisor pointcutAdvisor = (PointcutAdvisor) advisor;
-                // 校验当前Advisor是否适用于当前对象
+                // Check if current Advisor applies to the current class
                 if (pointcutAdvisor.getPointcut().getClassFilter().matches(actualClass)) {
                     MethodMatcher mm = pointcutAdvisor.getPointcut().getMethodMatcher();
                     boolean match;
-                    // 校验Advisor是否应用到当前方法上
+                    // Check if Advisor applies to the current method
                     match = mm.matches(method,actualClass);
                     if (match) {
                         MethodInterceptor interceptor = (MethodInterceptor) advisor.getAdvice();
@@ -1669,9 +1679,9 @@ public List<Object> getInterceptorsAndDynamicInterceptionAdvice(AdvisedSupport c
     }
 ```
 
-##### [2.将拦截器封装成ReflectiveMethodInvocation](#2.将拦截器封装成ReflectiveMethodInvocation)
+##### [2. Wrapping Interceptors in ReflectiveMethodInvocation](#2-wrapping-interceptors-in-reflectivemethodinvocation)
 
-这里也是重写了ReflectiveMethodInvocation的实现，来支持多切面。
+Here, we override the `ReflectiveMethodInvocation` implementation to support multiple aspects.
 
 ```java
 	public ReflectiveMethodInvocation(Object proxy,Object target, Method method, Object[] arguments,Class<?> targetClass,List<Object> chain) {
@@ -1686,31 +1696,33 @@ public List<Object> getInterceptorsAndDynamicInterceptionAdvice(AdvisedSupport c
 
 
 
-##### [3.执行拦截器链](#3.执行拦截器链)
+##### [3. Executing the Interceptor Chain](#3-executing-the-interceptor-chain)
 
-spring能够保证多个切面同时匹配同一方法的而不出现乱序的关键就在下面一段代码了。
+Spring ensures that multiple aspects can match the same method without causing any order issues. This is achieved by the following code.
 
 ReflectiveMethodInvocation#proceed()
 
 ```java
 	public Object proceed() throws Throwable {
-		// 初始currentInterceptorIndex为-1，每调用一次proceed就把currentInterceptorIndex+1
+		// Start with currentInterceptorIndex = -1, increment it by 1 with each proceed call
 		if (this.currentInterceptorIndex == this.interceptorsAndDynamicMethodMatchers.size() - 1) {
-			// 当调用次数 = 拦截器个数时
-			// 触发当前method方法
+			// Number of calls = number of interceptors
+			// Invoke the actual method
 			return method.invoke(this.target, this.arguments);
 		}
 
 		Object interceptorOrInterceptionAdvice =
 				this.interceptorsAndDynamicMethodMatchers.get(++this.currentInterceptorIndex);
-		// 普通拦截器，直接触发拦截器invoke方法
+		// For normal interceptors, call their invoke method
 		return ((MethodInterceptor) interceptorOrInterceptionAdvice).invoke(this);
 	}
 ```
 
-我们看到，MethodInvocation只是简单的将拦截器链的所有拦截器一一执行，最后再触发当前的method方法。这是很简单高效的方法，但问题是我们希望某些增强比如AfterReturningAdvice能够在方法执行完才被执行，这就涉及到不同增强的执行顺序的问题了。而MethodInvocation显然没有考虑顺序的问题，一个AfterReturningAdvice很可能在BeforeAdvice之前被调用。那么该如何保证顺序问题呢？
+We see that `MethodInvocation` simply executes each interceptor in the chain and then triggers the actual method. This is a simple and efficient approach, but the issue arises when we want certain enhancements, like `AfterReturningAdvice`, to be executed after the method completes. This introduces the problem of execution order. `MethodInvocation` doesn’t handle the order, meaning `AfterReturningAdvice` could be called before `BeforeAdvice`.
 
-答案是，控制增强的调用顺序其实由每个拦截器负责，所以我们需要分析`MethodBeforeAdviceInterceptor`和`AfterReturningAdviceInterceptor`
+So, how can we ensure the correct order?
+
+The answer is that each interceptor is responsible for controlling the order of execution. Therefore, we need to analyze `MethodBeforeAdviceInterceptor` and `AfterReturningAdviceInterceptor`.
 
 ```java
 public class MethodBeforeAdviceInterceptor implements MethodInterceptor, BeforeAdvice {
@@ -1770,13 +1782,13 @@ public class AfterReturningAdviceInterceptor implements MethodInterceptor, After
 
 ```
 
-看了源码大家应该就清楚了，拦截器链执行的顺序正时在各个拦截器的`invoke`方法中实现的。`before`会先执行`advice`增强方法再链式调用，这个比较好理解而`after`则是先执行链式调用，再调用`advice`增强方法，也就是一个递归的过程。和二叉树的遍历有些异曲同工之处。	
+After looking at the source code, it's clear that the execution order of the interceptor chain is handled in each interceptor's `invoke` method. `before` advice executes the `advice` method first and then proceeds with the chain, which is easy to understand. In contrast, `after` advice first proceeds with the chain and then calls the `advice` method, which is a recursive process. This is somewhat similar to binary tree traversal.
 
 ![](./assets/chainProceed.png)
 
-#### [测试](#测试)
+#### [Testing](#testing)
 
-！！！！！！！注意，使用过高版本的java可以因为java版本和cjlib冲突导致报错。建议使用java8进行测试
+！！！！！！！Note that using a newer version of Java might cause errors due to conflicts with CGLIB. It's recommended to test with Java 8.
 
 ```java
 public class WorldServiceImpl implements WorldService {
@@ -1799,7 +1811,7 @@ public class WorldServiceImpl implements WorldService {
 }
 ```
 
-前置增强：
+Before Advice：
 
 ```java
 public class WorldServiceBeforeAdvice implements MethodBeforeAdvice {
@@ -1811,7 +1823,7 @@ public class WorldServiceBeforeAdvice implements MethodBeforeAdvice {
 }
 ```
 
-后置返回增强：
+After Returning Advice:
 
 ```java
 public class WorldServiceAfterReturnAdvice implements AfterReturningAdvice {
@@ -1822,27 +1834,26 @@ public class WorldServiceAfterReturnAdvice implements AfterReturningAdvice {
 }
 ```
 
-测试代码：
-
+**Test Code:**
 ```java
 public class ProxyFactoryTest {
     @Test
     public void testAdvisor() throws Exception {
         WorldService worldService = new WorldServiceImpl();
 
-        //Advisor是Pointcut和Advice的组合
+        // Advisor is a combination of Pointcut and Advice
         String expression = "execution(* org.springframework.test.service.WorldService.explode(..))";
-        //第一个切面
+        // First aspect
         AspectJExpressionPointcutAdvisor advisor = new AspectJExpressionPointcutAdvisor();
         advisor.setExpression(expression);
         MethodBeforeAdviceInterceptor methodInterceptor = new MethodBeforeAdviceInterceptor(new WorldServiceBeforeAdvice());
         advisor.setAdvice(methodInterceptor);
-        //第二个切面
+        // Second aspect
         AspectJExpressionPointcutAdvisor advisor1=new AspectJExpressionPointcutAdvisor();
         advisor1.setExpression(expression);
         AfterReturningAdviceInterceptor afterReturningAdviceInterceptor=new AfterReturningAdviceInterceptor(new WorldServiceAfterReturnAdvice());
         advisor1.setAdvice(afterReturningAdviceInterceptor);
-        //通过ProxyFactory来获得代理
+        // Use ProxyFactory to create the proxy
         ProxyFactory factory = new ProxyFactory();
         TargetSource targetSource = new TargetSource(worldService);
         factory.setTargetSource(targetSource);
@@ -1855,23 +1866,23 @@ public class ProxyFactoryTest {
 }
 ```
 
-输出：
+**Output:**
 
 ```
 BeforeAdvice: do something before the earth explodes
 The null is going to explode
 AfterAdvice: do something after the earth explodes
 
-进程已结束，退出代码为 0
+Process finished with exit code 0
 ```
 
-#### [多切面动态代理融入bean生命周期](#多切面动态代理融入bean生命周期)
+#### [Multi-Aspects Dynamic Proxy Integrated into Bean Lifecycle](#multi-aspects-dynamic-proxy-integrated-into-bean-lifecycle)
 
 ```java
 	public void testAutoProxy() throws Exception {
 		ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:auto-proxy.xml");
 
-		//获取代理对象
+		// Get proxy object
 		WorldService worldService = applicationContext.getBean("worldService", WorldService.class);
 		worldService.explode();
 	}
@@ -1915,14 +1926,14 @@ auto-proxy.xml：
 
 ```
 
-输出：
+**Output:**
 
 ```
 BeforeAdvice: do something before the earth explodes
 The null is going to explode
 AfterAdvice: do something after the earth explodes
 
-进程已结束，退出代码为 0
+Process finished with exit code 0
 ```
 
-至此，我们已经解决多切面匹配同一方法的问题。
+With this, we have resolved the issue of multiple aspects matching the same method.
