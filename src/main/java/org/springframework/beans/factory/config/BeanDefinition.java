@@ -5,7 +5,9 @@ import org.springframework.beans.PropertyValues;
 import java.util.Objects;
 
 /**
- * BeanDefinition实例保存bean的信息，包括class类型、方法构造参数、bean属性、bean的scope等，此处简化只包含class类型和bean属性
+ * BeanDefinition instance stores information about the bean, 
+ * such as its class type, method constructor arguments, properties, and scope.
+ * For simplification, this class includes only the class type and bean properties.
  *
  * @author derekyi
  * @date 2020/11/22
@@ -18,24 +20,24 @@ public class BeanDefinition {
 
 
 	 /**
-	  * bean class类
+	  * Class of the bean
 	  */
 	 private Class beanClass;
 
 	 /**
-	  * class 属性值
+	  * Properties of the class
 	  */
 	private PropertyValues propertyValues;
 	 /**
-	  * 通过反射 初始化方法名称
+	  * Name of the initialization method (if any)
 	  */
 	private String initMethodName;
 	 /**
-	  * 销毁方法名称
+	  * Name of the destruction method (if any)
 	  */
 	private String destroyMethodName;
 	 /**
-	  * 作用域 默认单例Bean
+	  * Scope of the bean. Default is singleton
 	  */
 	private String scope = SCOPE_SINGLETON;
 
@@ -44,7 +46,7 @@ public class BeanDefinition {
 	private boolean prototype = false;
 
 	/*/*
-		懒加载
+		Indicates whether the bean should be lazily initialized
 	 */
 	private boolean lazyInit=false;
 

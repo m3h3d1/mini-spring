@@ -3,7 +3,7 @@ package org.springframework.context.support;
 import org.springframework.beans.BeansException;
 
 /**
- * xml文件的应用上下文
+ * Application context of the XML file
  *
  * @author derekyi
  * @date 2020/11/28
@@ -13,20 +13,20 @@ public class ClassPathXmlApplicationContext extends AbstractXmlApplicationContex
 	private String[] configLocations;
 
 	/**
-	 * 从xml文件加载BeanDefinition，并且自动刷新上下文
+	 * Load BeanDefinition from the xml file and automatically refresh the context
 	 *
-	 * @param configLocation xml配置文件
-	 * @throws BeansException 应用上下文创建失败
+	 * @param configLocation xml configuration file
+	 * @throws BeansException Failed to create application context
 	 */
 	public ClassPathXmlApplicationContext(String configLocation) throws BeansException {
 		this(new String[]{configLocation});
 	}
 
 	/**
-	 * 从xml文件加载BeanDefinition，并且自动刷新上下文
+	 * Load BeanDefinition from xml file and automatically refresh the context
 	 *
-	 * @param configLocations xml配置文件
-	 * @throws BeansException 应用上下文创建失败
+	 * @param configLocations xml configuration file
+	 * @throws BeansException application context creation failed
 	 */
 	public ClassPathXmlApplicationContext(String[] configLocations) throws BeansException {
 		this.configLocations = configLocations;

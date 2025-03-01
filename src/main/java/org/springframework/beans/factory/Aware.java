@@ -1,7 +1,7 @@
 package org.springframework.beans.factory;
 
 /**
- * 标记类接口，实现该接口能感知容器类接口
+ * Marker interface, implementing this interface can perceive container-specific interfaces
  *
  * @author derekyi
  * @date 2020/12/1

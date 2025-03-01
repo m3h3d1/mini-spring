@@ -9,19 +9,19 @@ import org.springframework.beans.BeansException;
 public interface ConfigurableApplicationContext extends ApplicationContext {
 
 	/**
-	 * 刷新容器
+	 * Refresh application context
 	 *
 	 * @throws BeansException
 	 */
 	void refresh() throws BeansException;
 
 	/**
-	 * 关闭应用上下文
+	 * Close application context
 	 */
 	void close();
 
 	/**
-	 * 向虚拟机中注册一个钩子方法，在虚拟机关闭之前执行关闭容器等操作
+	 * Register a hook with the JVM to execute container shutdown operations before JVM termination
 	 */
 	void registerShutdownHook();
 

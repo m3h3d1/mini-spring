@@ -5,7 +5,7 @@ import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.core.io.ResourceLoader;
 
 /**
- * 应用上下文
+ * Application Context
  *
  * @author derekyi
  * @date 2020/11/28

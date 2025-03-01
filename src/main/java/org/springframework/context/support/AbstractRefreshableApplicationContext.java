@@ -12,7 +12,7 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 	private DefaultListableBeanFactory beanFactory;
 
 	/**
-	 * 创建beanFactory并加载BeanDefinition
+	 * Create beanFactory and load BeanDefinition
 	 *
 	 * @throws BeansException
 	 */
@@ -23,7 +23,7 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 	}
 
 	/**
-	 * 创建bean工厂
+	 * Create bean factory
 	 *
 	 * @return
 	 */
@@ -32,7 +32,7 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 	}
 
 	/**
-	 * 加载BeanDefinition
+	 Load BeanDefinition
 	 *
 	 * @param beanFactory
 	 * @throws BeansException

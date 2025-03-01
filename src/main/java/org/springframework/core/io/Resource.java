@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * 资源的抽象和访问接口
+ * Interface for resource abstraction and access
  *
  * @author derekyi
  * @date 2020/11/25

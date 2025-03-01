@@ -14,16 +14,16 @@ import org.springframework.beans.factory.support.AbstractBeanFactory;
 public interface ConfigurableListableBeanFactory extends ListableBeanFactory, AutowireCapableBeanFactory, ConfigurableBeanFactory {
 
 	/**
-	 * 根据名称查找BeanDefinition
+	 * Find BeanDefinition by name
 	 *
 	 * @param beanName
 	 * @return
-	 * @throws BeansException 如果找不到BeanDefintion
+	 * @throws BeansException if BeanDefinition is not found
 	 */
 	BeanDefinition getBeanDefinition(String beanName) throws BeansException;
 
 	/**
-	 * 提前实例化所有单例实例
+	 * Pre-instantiate all singleton instances
 	 *
 	 * @throws BeansException
 	 */

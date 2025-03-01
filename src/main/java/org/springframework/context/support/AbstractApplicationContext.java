@@ -18,7 +18,7 @@ import java.util.Collection;
 import java.util.Map;
 
 /**
- * 抽象应用上下文
+ * Abstract Application Context
  *
  * @author derekyi
  * @date 2020/11/28
@@ -33,34 +33,34 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader i
 
 	@Override
 	public void refresh() throws BeansException {
-		//创建BeanFactory，并加载BeanDefinition
+		// Create BeanFactory and load BeanDefinitions
 		refreshBeanFactory();
 		ConfigurableListableBeanFactory beanFactory = getBeanFactory();
 
-		//添加ApplicationContextAwareProcessor，让继承自ApplicationContextAware的bean能感知bean
+		// Add ApplicationContextAwareProcessor to allow beans implementing ApplicationContextAware to sense the context
 		beanFactory.addBeanPostProcessor(new ApplicationContextAwareProcessor(this));
 
-		//在bean实例化之前，执行BeanFactoryPostProcessor
+		// Execute BeanFactoryPostProcessor before bean instantiation
 		invokeBeanFactoryPostProcessors(beanFactory);
 
-		//BeanPostProcessor需要提前与其他bean实例化之前注册
+		// Register BeanPostProcessor before other beans are instantiated
 		registerBeanPostProcessors(beanFactory);
 
-		//初始化事件发布者
+		// Initialize event publisher
 		initApplicationEventMulticaster();
 
-		//注册事件监听器
+		// Register event listeners
 		registerListeners();
 
-		//注册类型转换器和提前实例化单例bean
+		// Register type converters and pre-instantiate singleton beans
 		finishBeanFactoryInitialization(beanFactory);
 
-		//发布容器刷新完成事件
+		// Trigger container refresh completion event
 		finishRefresh();
 	}
 
 	protected void finishBeanFactoryInitialization(ConfigurableListableBeanFactory beanFactory) {
-		//设置类型转换器
+		// Set type converter
 		if (beanFactory.containsBean(CONVERSION_SERVICE_BEAN_NAME)) {
 			Object conversionService = beanFactory.getBean(CONVERSION_SERVICE_BEAN_NAME);
 			if (conversionService instanceof ConversionService) {
@@ -68,19 +68,19 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader i
 			}
 		}
 
-		//提前实例化单例bean
+		// Pre-instantiate singleton bean
 		beanFactory.preInstantiateSingletons();
 	}
 
 	/**
-	 * 创建BeanFactory，并加载BeanDefinition
+	 * Create BeanFactory and load BeanDefinitions
 	 *
 	 * @throws BeansException
 	 */
 	protected abstract void refreshBeanFactory() throws BeansException;
 
 	/**
-	 * 在bean实例化之前，执行BeanFactoryPostProcessor
+	 * Execute BeanFactoryPostProcessor before bean instantiation
 	 *
 	 * @param beanFactory
 	 */
@@ -92,7 +92,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader i
 	}
 
 	/**
-	 * 注册BeanPostProcessor
+	 * Register BeanPostProcessor
 	 *
 	 * @param beanFactory
 	 */
@@ -104,7 +104,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader i
 	}
 
 	/**
-	 * 初始化事件发布者
+	 * Initialize event publisher
 	 */
 	protected void initApplicationEventMulticaster() {
 		ConfigurableListableBeanFactory beanFactory = getBeanFactory();
@@ -113,7 +113,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader i
 	}
 
 	/**
-	 * 注册事件监听器
+	 * Register event listener
 	 */
 	protected void registerListeners() {
 		Collection<ApplicationListener> applicationListeners = getBeansOfType(ApplicationListener.class).values();
@@ -123,7 +123,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader i
 	}
 
 	/**
-	 * 发布容器刷新完成事件
+	 * Publish container refresh complete event
 	 */
 	protected void finishRefresh() {
 		publishEvent(new ContextRefreshedEvent(this));
@@ -179,10 +179,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader i
 	}
 
 	protected void doClose() {
-		//发布容器关闭事件
+		// Publish container close event
 		publishEvent(new ContextClosedEvent(this));
 
-		//执行单例bean的销毁方法
+		// Execute destroy methods of singleton beans
 		destroyBeans();
 	}
 

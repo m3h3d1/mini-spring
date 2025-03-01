@@ -27,7 +27,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 	@Override
 	protected Object createBean(String beanName, BeanDefinition beanDefinition) throws BeansException {
-		//如果bean需要代理，则直接返回代理对象
+		// If bean requires proxy, return proxy object
 		Object bean = resolveBeforeInstantiation(beanName, beanDefinition);
 		if (bean != null) {
 			return bean;
@@ -37,7 +37,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	}
 
 	/**
-	 * 执行InstantiationAwareBeanPostProcessor的方法，如果bean需要代理，直接返回代理对象
+	 * Execute methods of InstantiationAwareBeanPostProcessor and return proxy if needed
 	 *
 	 * @param beanName
 	 * @param beanDefinition
@@ -69,7 +69,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		try {
 			bean = createBeanInstance(beanDefinition);
 
-			//为解决循环依赖问题，将实例化后的bean放进缓存中提前暴露
+			// Handle circular dependency for singleton beans by exposing the bean early in the cache
 			if (beanDefinition.isSingleton()) {
 				Object finalBean = bean;
 				addSingletonFactory(beanName, new ObjectFactory<Object>() {
@@ -80,27 +80,27 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				});
 			}
 
-			//实例化bean之后执行
+			// Executes after the bean is instantiated
 			boolean continueWithPropertyPopulation = applyBeanPostProcessorsAfterInstantiation(beanName, bean);
 			if (!continueWithPropertyPopulation) {
 				return bean;
 			}
-			//在设置bean属性之前，允许BeanPostProcessor修改属性值
+			// Allows BeanPostProcessor to modify properties before they are set
 			applyBeanPostProcessorsBeforeApplyingPropertyValues(beanName, bean, beanDefinition);
-			//为bean填充属性
+			// Populate bean properties
 			applyPropertyValues(beanName, bean, beanDefinition);
-			//执行bean的初始化方法和BeanPostProcessor的前置和后置处理方法
+			// Executes the bean's initialization methods and BeanPostProcessor's pre and post-processing methods
 			bean = initializeBean(beanName, bean, beanDefinition);
 		} catch (Exception e) {
 			throw new BeansException("Instantiation of bean failed", e);
 		}
 
-		//注册有销毁方法的bean
+		// Registers beans with destroy methods (implementing DisposableBean or custom destroy method)
 		registerDisposableBeanIfNecessary(beanName, bean, beanDefinition);
 
 		Object exposedObject = bean;
 		if (beanDefinition.isSingleton()) {
-			//如果有代理对象，此处获取代理对象
+			// Retrieves the proxy object if it exists
 			exposedObject = getSingleton(beanName);
 			addSingleton(beanName, exposedObject);
 		}
@@ -122,7 +122,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	}
 
 	/**
-	 * bean实例化后执行，如果返回false，不执行后续设置属性的逻辑
+	 * Run BeanPostProcessors after bean instantiation.
+ 	 * If this method returns false, the property population step will be skipped
 	 *
 	 * @param beanName
 	 * @param bean
@@ -142,7 +143,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	}
 
 	/**
-	 * 在设置bean属性之前，允许BeanPostProcessor修改属性值
+	 * Allow BeanPostProcessor(s) to modify property values before they are applied to the bean
 	 *
 	 * @param beanName
 	 * @param bean
@@ -162,14 +163,14 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	}
 
 	/**
-	 * 注册有销毁方法的bean，即bean继承自DisposableBean或有自定义的销毁方法
-	 *
+	 * Registers a bean that has a destroy method, either by implementing DisposableBean 
+ 	 * or defining a custom destroy method.
 	 * @param beanName
 	 * @param bean
 	 * @param beanDefinition
 	 */
 	protected void registerDisposableBeanIfNecessary(String beanName, Object bean, BeanDefinition beanDefinition) {
-		//只有singleton类型bean会执行销毁方法
+		// Only singleton beans execute their destroy methods
 		if (beanDefinition.isSingleton()) {
 			if (bean instanceof DisposableBean || StrUtil.isNotEmpty(beanDefinition.getDestroyMethodName())) {
 				registerDisposableBean(beanName, new DisposableBeanAdapter(bean, beanName, beanDefinition));
@@ -178,7 +179,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	}
 
 	/**
-	 * 实例化bean
+	 * Creates a new instance of the bean
 	 *
 	 * @param beanDefinition
 	 * @return
@@ -188,7 +189,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	}
 
 	/**
-	 * 为bean填充属性
+	 * Sets the properties for the bean
 	 *
 	 * @param bean
 	 * @param beanDefinition
@@ -199,11 +200,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				String name = propertyValue.getName();
 				Object value = propertyValue.getValue();
 				if (value instanceof BeanReference) {
-					// beanA依赖beanB，先实例化beanB
+					// Bean a depends on bean b, instantiate bean b first.
 					BeanReference beanReference = (BeanReference) value;
 					value = getBean(beanReference.getBeanName());
 				} else {
-					//类型转换
+					// Type conversion
 					Class<?> sourceType = value.getClass();
 					Class<?> targetType = (Class<?>) TypeUtil.getFieldType(bean.getClass(), name);
 					ConversionService conversionService = getConversionService();
@@ -214,7 +215,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					}
 				}
 
-				//通过反射设置属性
+				// Set properties via reflection
 				BeanUtil.setFieldValue(bean, name, value);
 			}
 		} catch (Exception ex) {
@@ -227,7 +228,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			((BeanFactoryAware) bean).setBeanFactory(this);
 		}
 
-		//执行BeanPostProcessor的前置处理
+		// Execute the pre-initialization phase of BeanPostProcessors
 		Object wrappedBean = applyBeanPostProcessorsBeforeInitialization(bean, beanName);
 
 		try {
@@ -236,7 +237,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			throw new BeansException("Invocation of init method of bean[" + beanName + "] failed", ex);
 		}
 
-		//执行BeanPostProcessor的后置处理
+		// Execute the post-initialization phase of BeanPostProcessors
 		wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);
 		return wrappedBean;
 	}
@@ -271,7 +272,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	}
 
 	/**
-	 * 执行bean的初始化方法
+	 * Execute the initialization method of the bean
 	 *
 	 * @param beanName
 	 * @param bean

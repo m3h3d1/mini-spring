@@ -33,7 +33,7 @@ public class StringToNumberConverterFactory implements ConverterFactory<String, 
 			} else if (targetType.equals(Long.class)) {
 				return (T) Long.valueOf(source);
 			}
-			//TODO 其他数字类型
+			//TODO Other numeric types
 
 			else {
 				throw new IllegalArgumentException(

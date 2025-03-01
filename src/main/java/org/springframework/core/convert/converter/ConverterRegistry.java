@@ -1,7 +1,7 @@
 package org.springframework.core.convert.converter;
 
 /**
- * 类型转换器注册接口
+ * Type Converter Registration Interface
  *
  * @author derekyi
  * @date 2021/1/10

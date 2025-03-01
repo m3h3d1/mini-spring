@@ -4,7 +4,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.Aware;
 
 /**
- * 实现该接口，能感知所属ApplicationContext
+ * Implementing this interface allows a bean to be aware of its owning ApplicationContext
  *
  * @author derekyi
  * @date 2020/12/1

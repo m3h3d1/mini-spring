@@ -22,7 +22,7 @@ import java.io.InputStream;
 import java.util.List;
 
 /**
- * 读取配置在xml文件中的bean定义信息
+ * Read bean definition information in the XML configuration file
  *
  * @author derekyi
  * @date 2020/11/26
@@ -78,7 +78,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 
 		Element root = document.getRootElement();
 
-		//解析context:component-scan标签并扫描指定包中的类，提取类信息，组装成BeanDefinition
+		// Parse the context:component-scan tag and scan the specified package for classes, extracting class information to create BeanDefinition
 		Element componentScan = root.element(COMPONENT_SCAN_ELEMENT);
 		if (componentScan != null) {
 			String scanPath = componentScan.attributeValue(BASE_PACKAGE_ATTRIBUTE);
@@ -103,10 +103,10 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 			} catch (ClassNotFoundException e) {
 				throw new BeansException("Cannot find class [" + className + "]");
 			}
-			//id优先于name
+			// Use id as priority over name
 			beanName = StrUtil.isNotEmpty(beanId) ? beanId : beanName;
 			if (StrUtil.isEmpty(beanName)) {
-				//如果id和name都为空，将类名的第一个字母转为小写后作为bean的名称
+				// If both id and name are empty, use the class name with the first letter in lowercase as the bean name
 				beanName = StrUtil.lowerFirst(clazz.getSimpleName());
 			}
 
@@ -136,16 +136,16 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 				beanDefinition.getPropertyValues().addPropertyValue(propertyValue);
 			}
 			if (getRegistry().containsBeanDefinition(beanName)) {
-				//beanName不能重名
+				// Bean name cannot be duplicated
 				throw new BeansException("Duplicate beanName[" + beanName + "] is not allowed");
 			}
-			//注册BeanDefinition
+			// Register bean definition
 			getRegistry().registerBeanDefinition(beanName, beanDefinition);
 		}
 	}
 
 	/**
-	 * 扫描注解Component的类，提取信息，组装成BeanDefinition
+	 * Scan classes annotated with @Component, extract information, and assemble into BeanDefinition
 	 *
 	 * @param scanPath
 	 */

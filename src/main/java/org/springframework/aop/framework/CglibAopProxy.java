@@ -10,7 +10,7 @@ import net.sf.cglib.proxy.MethodProxy;
 import org.springframework.aop.AdvisedSupport;
 
 /**
- * cglib动态代理
+ * CGLIB dynamic proxy
  *
  * @author zqc
  * @date 2022/12/17
@@ -26,7 +26,7 @@ public class CglibAopProxy implements AopProxy {
 
 	@Override
 	public Object getProxy() {
-		// 创建动态代理增强类
+		// Create dynamic proxy enhancement class
 		Enhancer enhancer = new Enhancer();
 		enhancer.setSuperclass(advised.getTargetSource().getTarget().getClass());
 		enhancer.setInterfaces(advised.getTargetSource().getTargetClass());
@@ -35,7 +35,8 @@ public class CglibAopProxy implements AopProxy {
 	}
 
 	/**
-	 * 注意此处的MethodInterceptor是cglib中的接口，advised中的MethodInterceptor的AOP联盟中定义的接口，因此定义此类做适配
+	 * Note: MethodInterceptor here is from CGLIB, and the MethodInterceptor in advised is from the AOP Alliance.
+     * This class is defined to adapt the two.
 	 */
 	private static class DynamicAdvisedInterceptor implements MethodInterceptor {
 
@@ -47,14 +48,14 @@ public class CglibAopProxy implements AopProxy {
 
 		@Override
 		public Object intercept(Object proxy, Method method, Object[] args, MethodProxy methodProxy) throws Throwable {
-			// 获取目标对象
+			// Get target object
 			Object target = advised.getTargetSource().getTarget();
 			Class<?> targetClass = target.getClass();
 			Object retVal = null;
 			List<Object> chain = this.advised.getInterceptorsAndDynamicInterceptionAdvice(method, targetClass);
 			CglibMethodInvocation methodInvocation = new CglibMethodInvocation(proxy, target, method, args, targetClass, chain, methodProxy);
 			if (chain == null || chain.isEmpty()) {
-				//代理方法
+				// Call proxy method
 				retVal = methodProxy.invoke(target, args);
 			} else {
 				retVal = methodInvocation.proceed();

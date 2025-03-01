@@ -12,7 +12,7 @@ import java.lang.reflect.Constructor;
 public class SimpleInstantiationStrategy implements InstantiationStrategy {
 
 	/**
-	 * 简单的bean实例化策略，根据bean的无参构造函数实例化对象
+	 Simple bean instantiation strategy, instantiate objects based on the bean's no-argument constructor
 	 *
 	 * @param beanDefinition
 	 * @return

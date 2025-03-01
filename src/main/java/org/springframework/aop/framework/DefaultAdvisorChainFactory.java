@@ -26,11 +26,11 @@ public class DefaultAdvisorChainFactory implements AdvisorChainFactory {
 			if (advisor instanceof PointcutAdvisor) {
 				// Add it conditionally.
 				PointcutAdvisor pointcutAdvisor = (PointcutAdvisor) advisor;
-				// 校验当前Advisor是否适用于当前对象
+				// Check if the current Advisor is applicable to the current object
 				if (pointcutAdvisor.getPointcut().getClassFilter().matches(actualClass)) {
 					MethodMatcher mm = pointcutAdvisor.getPointcut().getMethodMatcher();
 					boolean match;
-					// 校验Advisor是否应用到当前方法上
+					// Check if the Advisor applies to the current method
 					match = mm.matches(method, actualClass);
 					if (match) {
 						MethodInterceptor interceptor = (MethodInterceptor) advisor.getAdvice();

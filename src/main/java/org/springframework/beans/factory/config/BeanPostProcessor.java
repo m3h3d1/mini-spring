@@ -3,7 +3,7 @@ package org.springframework.beans.factory.config;
 import org.springframework.beans.BeansException;
 
 /**
- * 用于修改实例化后的bean的修改扩展点
+ * Extension point for modifying beans after instantiation
  *
  * @author derekyi
  * @date 2020/11/28
@@ -11,7 +11,7 @@ import org.springframework.beans.BeansException;
 public interface BeanPostProcessor {
 
 	/**
-	 * 在bean执行初始化方法之前执行此方法
+	 * Executes before the bean initialization method
 	 *
 	 * @param bean
 	 * @param beanName
@@ -21,7 +21,7 @@ public interface BeanPostProcessor {
 	Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException;
 
 	/**
-	 * 在bean执行初始化方法之后执行此方法
+	 * Executes after the bean initialization method
 	 *
 	 * @param bean
 	 * @param beanName

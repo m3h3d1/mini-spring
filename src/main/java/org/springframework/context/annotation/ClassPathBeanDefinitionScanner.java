@@ -26,24 +26,24 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 		for (String basePackage : basePackages) {
 			Set<BeanDefinition> candidates = findCandidateComponents(basePackage);
 			for (BeanDefinition candidate : candidates) {
-				// 解析bean的作用域
+				// Resolve the scope of the bean
 				String beanScope = resolveBeanScope(candidate);
 				if (StrUtil.isNotEmpty(beanScope)) {
 					candidate.setScope(beanScope);
 				}
-				//生成bean的名称
+				// Generate the name of the bean
 				String beanName = determineBeanName(candidate);
-				//注册BeanDefinition
+				// Register BeanDefinition
 				registry.registerBeanDefinition(beanName, candidate);
 			}
 		}
 
-		//注册处理@Autowired和@Value注解的BeanPostProcessor
+		// Register a BeanPostProcessor to handle @Autowired and @Value annotations
 		registry.registerBeanDefinition(AUTOWIRED_ANNOTATION_PROCESSOR_BEAN_NAME, new BeanDefinition(AutowiredAnnotationBeanPostProcessor.class));
 	}
 
 	/**
-	 * 获取bean的作用域
+	 * Get the scope of the bean
 	 *
 	 * @param beanDefinition
 	 * @return
@@ -60,7 +60,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 
 
 	/**
-	 * 生成bean的名称
+	 * Generate the name of the bean
 	 *
 	 * @param beanDefinition
 	 * @return

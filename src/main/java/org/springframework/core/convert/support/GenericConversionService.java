@@ -85,7 +85,7 @@ public class GenericConversionService implements ConversionService, ConverterReg
 
 	private List<Class<?>> getClassHierarchy(Class<?> clazz) {
 		List<Class<?>> hierarchy = new ArrayList<>();
-		//原始类转为包装类
+		// Primitive type to wrapper class
 		clazz = BasicType.wrap(clazz);
 		while (clazz != null) {
 			hierarchy.add(clazz);

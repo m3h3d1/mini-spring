@@ -14,15 +14,15 @@ public class DefaultResourceLoader implements ResourceLoader {
 	@Override
 	public Resource getResource(String location) {
 		if (location.startsWith(CLASSPATH_URL_PREFIX)) {
-			//classpath下的资源
+			// Resources under the Classpath
 			return new ClassPathResource(location.substring(CLASSPATH_URL_PREFIX.length()));
 		} else {
 			try {
-				//尝试当成url来处理
+				// Attempt to process as a URL
 				URL url = new URL(location);
 				return new UrlResource(url);
 			} catch (MalformedURLException ex) {
-				//当成文件系统下的资源处理
+				// Treat as a file system resource
 				return new FileSystemResource(location);
 			}
 		}

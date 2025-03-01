@@ -15,7 +15,7 @@ public class PropertyValues {
 		for (int i = 0; i < this.propertyValueList.size(); i++) {
 			PropertyValue currentPv = this.propertyValueList.get(i);
 			if (currentPv.getName().equals(pv.getName())) {
-				//覆盖原有的属性值
+				// Override the original attribute values
 				this.propertyValueList.set(i, pv);
 				return;
 			}

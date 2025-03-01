@@ -4,7 +4,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanDefinition;
 
 /**
- * Bean的实例化策略
+ * Strategy for bean instantiation
  *
  * @author derekyi
  * @date 2020/11/23

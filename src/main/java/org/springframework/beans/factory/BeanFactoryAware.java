@@ -3,7 +3,7 @@ package org.springframework.beans.factory;
 import org.springframework.beans.BeansException;
 
 /**
- * 实现该接口，能感知所属BeanFactory
+ * Implementing this interface allows a bean to be aware of its owning BeanFactory
  *
  * @author derekyi
  * @date 2020/12/1

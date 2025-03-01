@@ -11,7 +11,6 @@ import java.util.List;
  */
 public interface AdvisorChainFactory {
 
-
 	List<Object> getInterceptorsAndDynamicInterceptionAdvice(AdvisedSupport config, Method method, Class<?> targetClass);
 
 }

@@ -10,7 +10,7 @@ import org.springframework.beans.factory.BeanFactory;
 public interface AutowireCapableBeanFactory extends BeanFactory {
 
 	/**
-	 * 执行BeanPostProcessors的postProcessBeforeInitialization方法
+	 * Execute the postProcessBeforeInitialization method of BeanPostProcessors
 	 *
 	 * @param existingBean
 	 * @param beanName
@@ -21,7 +21,7 @@ public interface AutowireCapableBeanFactory extends BeanFactory {
 			throws BeansException;
 
 	/**
-	 * 执行BeanPostProcessors的postProcessAfterInitialization方法
+	 * Execute the postProcessAfterInitialization method of BeanPostProcessors
 	 *
 	 * @param existingBean
 	 * @param beanName

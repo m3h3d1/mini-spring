@@ -1,7 +1,7 @@
 package org.springframework.core.convert.converter;
 
 /**
- * 类型转换抽象接口
+ * Type conversion abstract interface
  *
  * @author derekyi
  * @date 2021/1/10
@@ -9,7 +9,7 @@ package org.springframework.core.convert.converter;
 public interface Converter<S, T> {
 
 	/**
-	 * 类型转换
+	 * Type conversion
 	 */
 	T convert(S source);
 }

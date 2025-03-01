@@ -1,7 +1,7 @@
 package org.springframework.aop;
 
 /**
- * 被代理的目标对象
+ * Target Object for Proxy
  *
  * @author derekyi
  * @date 2020/12/6

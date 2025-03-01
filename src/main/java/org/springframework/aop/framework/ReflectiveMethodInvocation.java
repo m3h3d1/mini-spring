@@ -38,16 +38,16 @@ public class ReflectiveMethodInvocation implements MethodInvocation {
 
 	@Override
 	public Object proceed() throws Throwable {
-		// 初始currentInterceptorIndex为-1，每调用一次proceed就把currentInterceptorIndex+1
+		// Initial currentInterceptorIndex is -1, increment by 1 with each proceed call
 		if (this.currentInterceptorIndex == this.interceptorsAndDynamicMethodMatchers.size() - 1) {
-			// 当调用次数 = 拦截器个数时
-			// 触发当前method方法
+			// When the number of calls = the number of interceptors
+			// Trigger the current method
 			return method.invoke(this.target, this.arguments);
 		}
 
 		Object interceptorOrInterceptionAdvice =
 				this.interceptorsAndDynamicMethodMatchers.get(++this.currentInterceptorIndex);
-		// 普通拦截器，直接触发拦截器invoke方法
+		// For normal interceptors, call their invoke method
 		return ((MethodInterceptor) interceptorOrInterceptionAdvice).invoke(this);
 	}
 

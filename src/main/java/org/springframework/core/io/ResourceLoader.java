@@ -1,7 +1,7 @@
 package org.springframework.core.io;
 
 /**
- * 资源加载器接口
+ * Resource Loader Interface
  *
  * @author derekyi
  * @date 2020/11/25

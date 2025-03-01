@@ -10,7 +10,7 @@ import java.lang.reflect.Proxy;
 import java.util.List;
 
 /**
- * JDK动态代理
+ * JDK dynamic proxy
  *
  * @author zqc
  * @date 2022/12/19
@@ -24,7 +24,7 @@ public class JdkDynamicAopProxy implements AopProxy, InvocationHandler {
 	}
 
 	/**
-	 * 返回代理对象
+	 * Return the proxy object
 	 *
 	 * @return
 	 */
@@ -35,20 +35,20 @@ public class JdkDynamicAopProxy implements AopProxy, InvocationHandler {
 
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-		// 获取目标对象
+		// Get target object
 		Object target = advised.getTargetSource().getTarget();
 		Class<?> targetClass = target.getClass();
 		Object retVal = null;
-		// 获取拦截器链
+		// Get interceptor chain
 		List<Object> chain = this.advised.getInterceptorsAndDynamicInterceptionAdvice(method, targetClass);
 		if (chain == null || chain.isEmpty()) {
 			return method.invoke(target, args);
 		} else {
-			// 将拦截器统一封装成ReflectiveMethodInvocation
+			// Wrap interceptors into ReflectiveMethodInvocation
 			MethodInvocation invocation =
 					new ReflectiveMethodInvocation(proxy, target, method, args, targetClass, chain);
 			// Proceed to the joinpoint through the interceptor chain.
-			// 执行拦截器链
+			// Execute interceptor chain
 			retVal = invocation.proceed();
 		}
 		return retVal;

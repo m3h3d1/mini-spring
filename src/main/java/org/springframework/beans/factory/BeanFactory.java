@@ -3,7 +3,7 @@ package org.springframework.beans.factory;
 import org.springframework.beans.BeansException;
 
 /**
- * bean容器
+ * bean container
  *
  * @author derekyi
  * @date 2020/11/22
@@ -11,16 +11,16 @@ import org.springframework.beans.BeansException;
 public interface BeanFactory {
 
 	/**
-	 * 获取bean
+	 * Get bean
 	 *
 	 * @param name
 	 * @return
-	 * @throws BeansException bean不存在时
+	 * @throws BeansException when the bean does not exist
 	 */
 	Object getBean(String name) throws BeansException;
 
 	/**
-	 * 根据名称和类型查找bean
+	 * Find bean by name and type
 	 *
 	 * @param name
 	 * @param requiredType

@@ -10,7 +10,7 @@ import org.springframework.beans.PropertyValues;
 public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
 
 	/**
-	 * 在bean实例化之前执行
+	 * Executes before bean instantiation
 	 *
 	 * @param beanClass
 	 * @param beanName
@@ -20,7 +20,7 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
 	Object postProcessBeforeInstantiation(Class<?> beanClass, String beanName) throws BeansException;
 
 	/**
-	 * bean实例化之后，设置属性之前执行
+	 * Executes after bean instantiation but before setting properties
 	 *
 	 * @param bean
 	 * @param beanName
@@ -30,7 +30,7 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
 	boolean postProcessAfterInstantiation(Object bean, String beanName) throws BeansException;
 
 	/**
-	 * bean实例化之后，设置属性之前执行
+	 * Executes after bean instantiation but before setting properties
 	 *
 	 * @param pvs
 	 * @param bean
@@ -42,7 +42,7 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
 			throws BeansException;
 
 	/**
-	 * 提前暴露bean
+	 * Exposes the bean early
 	 *
 	 * @param bean
 	 * @param beanName

@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class AdvisedSupport {
 
-	//是否使用cglib代理
+	// Whether to use CGLIB proxy
 	private boolean proxyTargetClass = true;
 
 	private TargetSource targetSource;
@@ -66,7 +66,7 @@ public class AdvisedSupport {
 		this.methodMatcher = methodMatcher;
 	}
 	/**
-	 * 用来返回方法的拦截器链
+	 * Returns the interceptor chain for the method
 	 */
 	public List<Object> getInterceptorsAndDynamicInterceptionAdvice(Method method, Class<?> targetClass) {
 		Integer cacheKey=method.hashCode();

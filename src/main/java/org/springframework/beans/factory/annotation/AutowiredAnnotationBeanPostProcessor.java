@@ -13,7 +13,7 @@ import org.springframework.core.convert.ConversionService;
 import java.lang.reflect.Field;
 
 /**
- * 处理@Autowired和@Value注解的BeanPostProcessor
+ * BeanPostProcessor for Handling @Autowired and @Value Annotations
  *
  * @author derekyi
  * @date 2020/12/27
@@ -29,7 +29,7 @@ public class AutowiredAnnotationBeanPostProcessor implements InstantiationAwareB
 
 	@Override
 	public PropertyValues postProcessPropertyValues(PropertyValues pvs, Object bean, String beanName) throws BeansException {
-		//处理@Value注解
+		// Handle @Value annotation
 		Class<?> clazz = bean.getClass();
 		Field[] fields = clazz.getDeclaredFields();
 		for (Field field : fields) {
@@ -38,7 +38,7 @@ public class AutowiredAnnotationBeanPostProcessor implements InstantiationAwareB
 				Object value = valueAnnotation.value();
 				value = beanFactory.resolveEmbeddedValue((String) value);
 
-				//类型转换
+				// Type conversion
 				Class<?> sourceType = value.getClass();
 				Class<?> targetType = (Class<?>) TypeUtil.getType(field);
 				ConversionService conversionService = beanFactory.getConversionService();
@@ -52,7 +52,7 @@ public class AutowiredAnnotationBeanPostProcessor implements InstantiationAwareB
 			}
 		}
 
-		//处理@Autowired注解
+		// Handle @Autowired annotation
 		for (Field field : fields) {
 			Autowired autowiredAnnotation = field.getAnnotation(Autowired.class);
 			if (autowiredAnnotation != null) {

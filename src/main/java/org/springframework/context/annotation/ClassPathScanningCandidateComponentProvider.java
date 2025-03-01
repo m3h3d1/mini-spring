@@ -15,7 +15,7 @@ public class ClassPathScanningCandidateComponentProvider {
 
 	public Set<BeanDefinition> findCandidateComponents(String basePackage) {
 		Set<BeanDefinition> candidates = new LinkedHashSet<BeanDefinition>();
-		// 扫描有org.springframework.stereotype.Component注解的类
+		// Scan classes annotated with org.springframework.stereotype.Component
 		Set<Class<?>> classes = ClassUtil.scanPackageByAnnotation(basePackage, Component.class);
 		for (Class<?> clazz : classes) {
 			BeanDefinition beanDefinition = new BeanDefinition(clazz);

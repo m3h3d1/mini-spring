@@ -32,9 +32,9 @@ public class DisposableBeanAdapter implements DisposableBean {
 			((DisposableBean) bean).destroy();
 		}
 
-		//避免同时继承自DisposableBean，且自定义方法与DisposableBean方法同名，销毁方法执行两次的情况
+		// Avoid executing the destroy method twice if the bean implements DisposableBean and a custom method has the same name as a DisposableBean method
 		if (StrUtil.isNotEmpty(destroyMethodName) && !(bean instanceof DisposableBean && "destroy".equals(this.destroyMethodName))) {
-			//执行自定义方法
+			// Execute the custom destroy method
 			Method destroyMethod = ClassUtil.getPublicMethod(bean.getClass(), destroyMethodName);
 			if (destroyMethod == null) {
 				throw new BeansException("Couldn't find a destroy method named '" + destroyMethodName + "' on bean with name '" + beanName + "'");

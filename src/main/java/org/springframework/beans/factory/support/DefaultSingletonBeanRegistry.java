@@ -16,17 +16,17 @@ import org.springframework.beans.factory.config.SingletonBeanRegistry;
 public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
 
 	 /**
-	  * 一级缓存
+	  * Level 1 Cache
 	  */
 	private Map<String, Object> singletonObjects = new HashMap<>();
 
 	 /**
-	  * 二级缓存
+	  * Level 2 Cache
 	  */
 	private Map<String, Object> earlySingletonObjects = new HashMap<>();
 
 	 /**
-	  * 三级缓存
+	  * Level 3 Cache
 	  */
 	private Map<String, ObjectFactory<?>> singletonFactories = new HashMap<String, ObjectFactory<?>>();
 
@@ -41,7 +41,7 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
 				ObjectFactory<?> singletonFactory = singletonFactories.get(beanName);
 				if (singletonFactory != null) {
 					singletonObject = singletonFactory.getObject();
-					//从三级缓存放进二级缓存
+					// Move from Level 3 Cache to Level 2 Cache
 					earlySingletonObjects.put(beanName, singletonObject);
 					singletonFactories.remove(beanName);
 				}

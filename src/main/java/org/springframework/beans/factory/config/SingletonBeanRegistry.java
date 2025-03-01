@@ -1,7 +1,7 @@
 package org.springframework.beans.factory.config;
 
 /**
- * 单例注册表
+ * Singleton bean registry
  *
  * @author derekyi
  * @date 2020/11/22

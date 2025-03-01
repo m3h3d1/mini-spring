@@ -11,7 +11,7 @@ import java.util.Map;
 public interface ListableBeanFactory extends BeanFactory {
 
 	/**
-	 * 返回指定类型的所有实例
+	 * Return all instances of the specified type
 	 *
 	 * @param type
 	 * @param <T>
@@ -21,7 +21,7 @@ public interface ListableBeanFactory extends BeanFactory {
 	<T> Map<String, T> getBeansOfType(Class<T> type) throws BeansException;
 
 	/**
-	 * 返回定义的所有bean的名称
+	 * Returns the names of all defined beans
 	 *
 	 * @return
 	 */

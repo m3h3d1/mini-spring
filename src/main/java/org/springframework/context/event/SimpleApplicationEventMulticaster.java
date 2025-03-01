@@ -28,7 +28,7 @@ public class SimpleApplicationEventMulticaster extends AbstractApplicationEventM
 	}
 
 	/**
-	 * 监听器是否对该事件感兴趣
+	 * Whether the listener is interested in this event
 	 *
 	 * @param applicationListener
 	 * @param event

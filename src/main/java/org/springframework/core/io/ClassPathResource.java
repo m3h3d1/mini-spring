@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * classpath下的资源
+ * Resources under classpath
  *
  * @author derekyi
  * @date 2020/11/25

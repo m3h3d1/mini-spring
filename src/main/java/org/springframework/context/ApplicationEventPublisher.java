@@ -1,7 +1,7 @@
 package org.springframework.context;
 
 /**
- * 事件发布者接口
+ * Event Publisher Interface
  *
  * @author derekyi
  * @date 2020/12/5
@@ -9,7 +9,7 @@ package org.springframework.context;
 public interface ApplicationEventPublisher {
 
 	/**
-	 * 发布事件
+	 * Publish event
 	 *
 	 * @param event
 	 */

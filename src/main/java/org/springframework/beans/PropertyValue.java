@@ -1,7 +1,7 @@
 package org.springframework.beans;
 
 /**
- * bean属性信息
+ * Bean property information
  *
  * @author derekyi
  * @date 2020/11/23
