@@ -12,7 +12,7 @@ public class CustomerBeanPostProcessor implements BeanPostProcessor {
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 		System.out.println("CustomerBeanPostProcessor#postProcessBeforeInitialization, beanName: " + beanName);
-		//换兰博基尼
+		// Switch to Lamborghini
 		if ("car".equals(beanName)) {
 			((Car) bean).setBrand("lamborghini");
 		}

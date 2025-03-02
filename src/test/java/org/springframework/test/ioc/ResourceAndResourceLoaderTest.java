@@ -18,14 +18,14 @@ public class ResourceAndResourceLoaderTest {
 	public void testResourceLoader() throws Exception {
 		DefaultResourceLoader resourceLoader = new DefaultResourceLoader();
 
-		//加载classpath下的资源
+		// Load resources under the classpath
 		Resource resource = resourceLoader.getResource("classpath:hello.txt");
 		InputStream inputStream = resource.getInputStream();
 		String content = IoUtil.readUtf8(inputStream);
 		System.out.println(content);
 		assertThat(content).isEqualTo("hello world");
 
-		//加载文件系统资源
+		// Load file system resources
 		resource = resourceLoader.getResource("src/test/resources/hello.txt");
 		assertThat(resource instanceof FileSystemResource).isTrue();
 		inputStream = resource.getInputStream();
@@ -33,7 +33,7 @@ public class ResourceAndResourceLoaderTest {
 		System.out.println(content);
 		assertThat(content).isEqualTo("hello world");
 
-		//加载url资源
+		// Load URL resource
 		resource = resourceLoader.getResource("https://github.com/DerekYRC/mini-spring/blob/main/README.md");
 		assertThat(resource instanceof UrlResource).isTrue();
 		inputStream = resource.getInputStream();

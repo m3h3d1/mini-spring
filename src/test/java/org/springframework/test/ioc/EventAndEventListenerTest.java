@@ -15,6 +15,6 @@ public class EventAndEventListenerTest {
 		ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:event-and-event-listener.xml");
 		applicationContext.publishEvent(new CustomEvent(applicationContext));
 
-		applicationContext.registerShutdownHook();//或者applicationContext.close()主动关闭容器;
+		applicationContext.registerShutdownHook(); // Or use applicationContext.close() to manually close the container
 	}
 }

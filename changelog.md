@@ -852,7 +852,7 @@ public class DynamicProxyTest {
 
 	@Test
 	public void testBeforeAdvice() throws Exception {
-		//设置BeforeAdvice
+		// Set BeforeAdvice
 		WorldServiceBeforeAdvice beforeAdvice = new WorldServiceBeforeAdvice();
 		MethodBeforeAdviceInterceptor methodInterceptor = new MethodBeforeAdviceInterceptor(beforeAdvice);
 		advisedSupport.setMethodInterceptor(methodInterceptor);
@@ -1211,7 +1211,7 @@ public class WorldServiceImpl implements WorldService {
 		System.out.println("The " + name + " is going to explode");
 	}
 
-	//setter and getter
+	// setter and getter
 }
 ```
 

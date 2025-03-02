@@ -15,6 +15,6 @@ public class LazyInitTest {
 		System.out.println(System.currentTimeMillis() + ":applicationContext-over");
 		TimeUnit.SECONDS.sleep(1);
 		Car c = (Car) applicationContext.getBean("car");
-		c.showTime();//显示bean的创建时间
+		c.showTime(); // Show the creation time of the bean
 	}
 }

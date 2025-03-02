@@ -29,7 +29,7 @@ public class DynamicProxyTest {
 	public void setup() {
 		WorldService worldService = new WorldServiceImpl();
 		advisedSupport = new ProxyFactory();
-		//Advisor是Pointcut和Advice的组合
+		// Advisor is a combination of pointcut and advice
 		String expression = "execution(* org.springframework.test.service.WorldService.explode(..))";
 		AspectJExpressionPointcutAdvisor advisor = new AspectJExpressionPointcutAdvisor();
 		advisor.setExpression(expression);
@@ -54,13 +54,13 @@ public class DynamicProxyTest {
 
 	@Test
 	public void testProxyFactory() throws Exception {
-		// 使用JDK动态代理
+		// Use JDK dynamic proxy
 		ProxyFactory factory = (ProxyFactory) advisedSupport;
 		factory.setProxyTargetClass(false);
 		WorldService proxy = (WorldService) factory.getProxy();
 		proxy.explode();
 
-		// 使用CGLIB动态代理
+		// Use CGLIB dynamic proxy
 		factory.setProxyTargetClass(true);
 		proxy = (WorldService) factory.getProxy();
 		proxy.explode();
@@ -68,7 +68,7 @@ public class DynamicProxyTest {
 
 	@Test
 	public void testBeforeAdvice() throws Exception {
-		//设置BeforeAdvice
+		// Set up BeforeAdvice
 		String expression = "execution(* org.springframework.test.service.WorldService.explode(..))";
 		AspectJExpressionPointcutAdvisor advisor = new AspectJExpressionPointcutAdvisor();
 		advisor.setExpression(expression);
@@ -84,7 +84,7 @@ public class DynamicProxyTest {
 	public void testAdvisor() throws Exception {
 		WorldService worldService = new WorldServiceImpl();
 
-		//Advisor是Pointcut和Advice的组合
+		// Advisor is a combination of pointcut and advice
 		String expression = "execution(* org.springframework.test.service.WorldService.explode(..))";
 		AspectJExpressionPointcutAdvisor advisor = new AspectJExpressionPointcutAdvisor();
 		advisor.setExpression(expression);
@@ -99,7 +99,7 @@ public class DynamicProxyTest {
 			proxyFactory.setTargetSource(targetSource);
 			proxyFactory.addAdvisor(advisor);
 //			proxyFactory.setMethodMatcher(advisor.getPointcut().getMethodMatcher());
-//			advisedSupport.setProxyTargetClass(true);   //JDK or CGLIB
+//			advisedSupport.setProxyTargetClass(true);   // JDK or CGLIB
 
 			WorldService proxy = (WorldService) proxyFactory.getProxy();
 			proxy.explode();

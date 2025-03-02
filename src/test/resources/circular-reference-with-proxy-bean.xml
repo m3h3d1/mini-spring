@@ -11,7 +11,7 @@
         <property name="a" ref="a"/>
     </bean>
 
-    <!-- a被代理 -->
+    <!-- Bean A is being proxied -->
     <bean id="a" class="org.springframework.test.bean.A">
         <property name="b" ref="b"/>
     </bean>

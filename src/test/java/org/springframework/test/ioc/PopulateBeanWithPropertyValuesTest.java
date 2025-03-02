@@ -33,7 +33,7 @@ public class PopulateBeanWithPropertyValuesTest {
 	}
 
 	/**
-	 * 为bean注入bean
+	 * Inject bean into another bean
 	 *
 	 * @throws Exception
 	 */
@@ -41,17 +41,17 @@ public class PopulateBeanWithPropertyValuesTest {
 	public void testPopulateBeanWithBean() throws Exception {
 		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
 
-		//注册Car实例
+		// Register car instance
 		PropertyValues propertyValuesForCar = new PropertyValues();
 		propertyValuesForCar.addPropertyValue(new PropertyValue("brand", "porsche"));
 		BeanDefinition carBeanDefinition = new BeanDefinition(Car.class, propertyValuesForCar);
 		beanFactory.registerBeanDefinition("car", carBeanDefinition);
 
-		//注册Person实例
+		// Register person instance
 		PropertyValues propertyValuesForPerson = new PropertyValues();
 		propertyValuesForPerson.addPropertyValue(new PropertyValue("name", "derek"));
 		propertyValuesForPerson.addPropertyValue(new PropertyValue("age", 18));
-		//Person实例依赖Car实例
+		// Person instance depends on car instance
 		propertyValuesForPerson.addPropertyValue(new PropertyValue("car", new BeanReference("car")));
 		BeanDefinition beanDefinition = new BeanDefinition(Person.class, propertyValuesForPerson);
 		beanFactory.registerBeanDefinition("person", beanDefinition);

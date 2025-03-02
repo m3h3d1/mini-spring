@@ -51,6 +51,3 @@
 
 ## Usage
 Refer to [changelog.md](https://github.com/m3h3d1/mini-spring/blob/main-en/changelog.md)
-
-## Contributions
-Pull Requests are welcome.

@@ -22,13 +22,13 @@ public class BeanFactoryPostProcessorAndBeanPostProcessorTest {
 		XmlBeanDefinitionReader beanDefinitionReader = new XmlBeanDefinitionReader(beanFactory);
 		beanDefinitionReader.loadBeanDefinitions("classpath:spring.xml");
 
-		//在所有BeanDefintion加载完成后，但在bean实例化之前，修改BeanDefinition的属性值
+		// Modify BeanDefinition properties after all BeanDefinitions are loaded but before beans are instantiated
 		CustomBeanFactoryPostProcessor beanFactoryPostProcessor = new CustomBeanFactoryPostProcessor();
 		beanFactoryPostProcessor.postProcessBeanFactory(beanFactory);
 
 		Person person = (Person) beanFactory.getBean("person");
 		System.out.println(person);
-		//name属性在CustomBeanFactoryPostProcessor中被修改为ivy
+		// The 'name' property was modified to 'ivy' in CustomBeanFactoryPostProcessor
 		assertThat(person.getName()).isEqualTo("ivy");
 	}
 
@@ -38,13 +38,13 @@ public class BeanFactoryPostProcessorAndBeanPostProcessorTest {
 		XmlBeanDefinitionReader beanDefinitionReader = new XmlBeanDefinitionReader(beanFactory);
 		beanDefinitionReader.loadBeanDefinitions("classpath:spring.xml");
 
-		//添加bean实例化后的处理器
+		// Add a processor that handles beans after instantiation
 		CustomerBeanPostProcessor customerBeanPostProcessor = new CustomerBeanPostProcessor();
 		beanFactory.addBeanPostProcessor(customerBeanPostProcessor);
 
 		Car car = (Car) beanFactory.getBean("car");
 		System.out.println(car);
-		//brand属性在CustomerBeanPostProcessor中被修改为lamborghini
+		// The 'brand' property was modified to 'lamborghini' in CustomerBeanPostProcessor
 		assertThat(car.getBrand()).isEqualTo("lamborghini");
 	}
 }
