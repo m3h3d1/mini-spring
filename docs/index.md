@@ -2,4 +2,4 @@
 layout: default
 ---
 
-{% include_relative ../changelog.md %}
+{% include_relative changelog.md %}
