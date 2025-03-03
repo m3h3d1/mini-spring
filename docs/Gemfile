@@ -1,0 +1,7 @@
+source "https://rubygems.org"
+
+# GitHub Pages - includes Jekyll and all required dependencies
+gem "github-pages"
+
+# Required for Ruby 3.0+ as it's no longer bundled
+gem "webrick"
